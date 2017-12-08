@@ -30,7 +30,8 @@
 //    Sleep mode define
 //
 
-#define SLEEP_MODE   SLEEP_MODE_STANDBY
+#define SLEEP_MODE   SLEEP_MODE_PWR_DOWN
+//#define SLEEP_MODE   SLEEP_MODE_STANDBY
 //#define SLEEP_MODE   SLEEP_MODE_PWR_SAVE
 
 
