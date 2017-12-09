@@ -1,11 +1,5 @@
 /*
  * AppDefine.h
-*
- *                 MIT License
- *      Copyright (c) 2017 Tomoaki Yamaguchi
- *
- *   This software is released under the MIT License.
- *   http://opensource.org/licenses/mit-license.php
  *
  *   Created on: 2017/12/08
  *       Author: tomoaki@tomy-tech.com

@@ -1,11 +1,5 @@
 /*
  * ADB922S.h
- * 
- *                 MIT License
- *      Copyright (c) 2017 Tomoaki Yamaguchi
- *
- *   This software is released under the MIT License.
- *   http://opensource.org/licenses/mit-license.php
  *
  *   Created on: 2017/11/25
  *       Author: tomoaki@tomy-tech.com
@@ -15,28 +9,29 @@
 #ifndef ADB922S_H_
 #define ADB922S_H_
 #include <AppDefine.h>
+#include <Payload.h>
 #include <SoftwareSerial.h>
 namespace tomyApplication
 {
 //
 //  LoRaWAN defines
 //
-#ifndef LoRa_MAX_PAYLOAD_SIZE
-#define LoRa_MAX_PAYLOAD_SIZE    64
+#ifndef LoRa_MAX_PAYLOAD_SIZE 
+#define LoRa_MAX_PAYLOAD_SIZE      64
 #endif
 
-#define LoRa_INIT_WAIT_TIME          1000
+#define LoRa_INIT_WAIT_TIME      1000
 #define LoRa_SERIAL_WAIT_TIME    2000
-#define LoRa_RECEIVE_DELAY2        5000
-#define JOIN__WAIT_TIME              30000
+#define LoRa_RECEIVE_DELAY2      5000
+#define JOIN__WAIT_TIME         30000
 
-#define LoRa_RC_SUCCESS                       0
+#define LoRa_RC_SUCCESS            0
 #define LoRa_RC_DATA_TOO_LONG     -1
-#define LoRa_RC_NOT_JOINED              -2
-#define LoRa_RC_ERROR                         -3
-#define LoRa_Rx_PIN                              11
-#define LoRa_Tx_PIN                              12
-#define LoRa_WAKEUP_PIN                   7
+#define LoRa_RC_NOT_JOINED        -2
+#define LoRa_RC_ERROR             -3
+#define LoRa_Rx_PIN               11
+#define LoRa_Tx_PIN               12
+#define LoRa_WAKEUP_PIN            7
 
 #ifdef SHOW_LORA_TRANSACTION
 #define LoRaDebug(...)  DebugPrint(__VA_ARGS__)
@@ -84,6 +79,8 @@ public:
     int sendBinary(uint8_t port, bool echo, uint8_t* data, uint8_t dataLen);
     int sendDataConfirm(uint8_t port, bool echo, const __FlashStringHelper* format, ...);
     int sendBinaryConfirm(uint8_t port, bool echo, uint8_t* data, uint8_t dataLen);
+    int sendMsgPack(uint8_t port, bool echo, Payload* data);
+    int sendMsgPackConfirm(uint8_t port, bool echo, Payload* data);
     uint8_t getDownLinkPort( void);
     String getDownLinkPayload(void);
     uint8_t getDownLinkBinaryData(uint8_t* data);

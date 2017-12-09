@@ -1,12 +1,6 @@
 /*
  * KashiwaGeeks.h
  * 
- *                 MIT License
- *      Copyright (c) 2017 Tomoaki Yamaguchi
- *
- *   This software is released under the MIT License.
- *   http://opensource.org/licenses/mit-license.php
- *
  *   Created on: 2017/11/25
  *       Author: tomoaki@tomy-tech.com
  *
@@ -17,7 +11,7 @@
 
 #include <ADB922S.h>
 #include <Application.h>
-
+#include <Payload.h>
 using namespace tomyApplication;
 
 extern Application *theApplication;

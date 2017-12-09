@@ -1,11 +1,5 @@
 /*
  * ADB922S.cpp
- * 
- *                 MIT License
- *      Copyright (c) 2017 Tomoaki Yamaguchi
- *
- *   This software is released under the MIT License.
- *   http://opensource.org/licenses/mit-license.php
  *
  *   Created on: 2017/11/25
  *       Author: tomoaki@tomy-tech.com
@@ -17,6 +11,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <ADB922S.h>
+#include <Payload.h>
 
 using namespace tomyApplication;
 extern int getFreeMemory(void);
@@ -380,7 +375,15 @@ int ADB922S::sendBinaryConfirm(uint8_t port, bool echo, uint8_t* binaryData, uin
     return transmitBinaryData(port, echo, true, binaryData, dataLen);
 }
 
+int ADB922S::sendMsgPack(uint8_t port, bool echo, Payload* payload)
+{
+    return transmitBinaryData(port, echo, true, payload->getRowData(), payload->getLen());
+}
 
+int ADB922S::sendMsgPackConfirm(uint8_t port, bool echo, Payload* payload)
+{
+    return transmitBinaryData(port, echo, true, payload->getRowData(), payload->getLen());
+}
 
 int ADB922S::transmitData(uint8_t port, bool echo, bool ack, const __FlashStringHelper* format, va_list args)
 {

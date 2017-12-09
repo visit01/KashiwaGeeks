@@ -1,10 +1,4 @@
 //
-// 温度湿度気圧 自動送信スケッチ for Kiwi LoRa Module TLM922S
-//            for BOSCH BME280 / Kiwi LoRa module TLM922S
-//            Ver 1.0
-//
-// Copyright(c) 2017 SenseWay. All rights reserved.
-//
 // Arrenged by Tomoaki Yamaguchi
 //
 unsigned long beforetime = 0L;
@@ -31,9 +25,7 @@ void loop() {
   }
 }
 
-//
-// 温度湿度気圧を LoRa送信する
-//
+
 void sendTemp()
 {
   Serial.print("Temperature: ");
