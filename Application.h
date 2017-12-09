@@ -1,12 +1,6 @@
 /*
  * Application.h
  * 
- *                 MIT License
- *      Copyright (c) 2017 Tomoaki Yamaguchi
- *
- *   This software is released under the MIT License.
- *   http://opensource.org/licenses/mit-license.php
- *
  *   Created on: 2017/11/25
  *       Author: tomoaki@tomy-tech.com
  *
@@ -40,6 +34,8 @@ namespace tomyApplication
 {
 
 #define ARDUINO_LED_PIN     13
+#define CONSOLE_Rx_PIN               11
+#define CONSOLE_Tx_PIN               12
 
 /*======================================
  MACROs for the Appication
@@ -47,6 +43,7 @@ namespace tomyApplication
 #define TASK_LIST   TaskList_t  theTaskList[]
 #define TASK(...)         {__VA_ARGS__}
 #define END_OF_TASK_LIST  {0, 0, 0}
+#define ReRun(...)   theApplication->rerun(__VA_ARGS__)
 
 #define LedOn() theApplication->indicator(true)
 #define LedOff() theApplication->indicator(false)
@@ -86,6 +83,7 @@ public:
 
     void initialize( void);
     void run(void);
+    void rerun(void (*_callbackPtr)(), uint32_t second);
     void systemSleep(void);
     void disableInterrupts(void);
     void enableInterrupts(void);

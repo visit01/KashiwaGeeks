@@ -1,11 +1,5 @@
 /*
  * AppDefine.h
-*
- *                 MIT License
- *      Copyright (c) 2017 Tomoaki Yamaguchi
- *
- *   This software is released under the MIT License.
- *   http://opensource.org/licenses/mit-license.php
  *
  *   Created on: 2017/12/08
  *       Author: tomoaki@tomy-tech.com
@@ -21,7 +15,7 @@
 //
 
 #define SHOW_LORA_TRANSACTION
-//#define FREE_MEMORY_CHECK
+#define FREE_MEMORY_CHECK
 //#define SHOW_TASK_LIST
 //#define SHOW_SYSTIME
 
@@ -36,11 +30,10 @@
 
 
 //
-//  LoRaWAN defines
+//  LoRaWAN device
 //
 
-#define LoRa_MAX_PAYLOAD_SIZE    64
-
-
+#include <ADB922S.h>
+//#include <RAK811.h>
 
 #endif /* LIBRARIES_KASHIWAGEEKS_APPDEFINE_H_ */

@@ -1,18 +1,13 @@
 /*
  * Application.cpp
  * 
- *                 MIT License
- *      Copyright (c) 2017 Tomoaki Yamaguchi
- *
- *   This software is released under the MIT License.
- *   http://opensource.org/licenses/mit-license.php
- *
  *   Created on: 2017/11/25
  *       Author: tomoaki@tomy-tech.com
  *
  */
 
 #include <Application.h>
+#include <SoftwareSerial.h>
 #include <avr/wdt.h>
 #include <avr/sleep.h>
 #include <avr/power.h>
@@ -47,6 +42,13 @@ Application* theApplication = new Application();
 bool theConsoleFlag  = true;
 bool theDebugFlag  = true;
 extern TaskList_t theTaskList[];
+
+#ifdef SOFTCONSOLE
+SoftwareSerial* theConsole = new SoftwareSerial(CONSOLE_Rx_PIN, CONSOLE_Tx_PIN);
+#else
+HardwareSerial* theConsole = &Serial;
+#endif
+
 
 /*=====================================
      Watchdog Tmer functions
@@ -162,6 +164,11 @@ void DisableDebug(void)
     theDebugFlag = false;
 }
 
+void ConsoleBegin(unsigned long baud)
+{
+    theConsole->begin(baud);
+}
+
 void ConsolePrint(const char *fmt, ...)
 {
     if ( theConsoleFlag )
@@ -171,7 +178,7 @@ void ConsolePrint(const char *fmt, ...)
          va_start(args, fmt);
          vsnprintf(buf, sizeof(buf), fmt, args);
          va_end(args);
-         Serial.print(buf);
+         theConsole->print(buf);
     }
 }
 
@@ -184,7 +191,7 @@ void ConsolePrint(const __FlashStringHelper *fmt, ...)
         va_start(args, fmt);
         vsnprintf_P(buf, sizeof(buf), (const char *)fmt, args);
         va_end(args);
-        Serial.print(buf);
+        theConsole->print(buf);
    }
 }
 
@@ -197,7 +204,7 @@ void DebugPrint(const char *fmt, ...)
       va_start(args, fmt);
       vsnprintf(buf, sizeof(buf), fmt, args);
       va_end(args);
-      Serial.print(buf);
+      theConsole->print(buf);
    }
 }
 
@@ -210,7 +217,7 @@ void DebugPrint(const __FlashStringHelper *fmt, ...)
         va_start(args, fmt);
         vsnprintf_P(buf, sizeof(buf), (const char *)fmt, args);
         va_end(args);
-        Serial.print(buf);
+        theConsole->print(buf);
    }
 }
 
@@ -222,7 +229,7 @@ void debugout(const char *fmt, ...)
   va_start(args, fmt);
   vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
-  Serial.print(buf);
+  theConsole->print(buf);
 }
 
 void debugout(const __FlashStringHelper *fmt, ...)
@@ -232,7 +239,7 @@ void debugout(const __FlashStringHelper *fmt, ...)
     va_start(args, fmt);
     vsnprintf_P(buf, sizeof(buf), (const char *)fmt, args);
     va_end(args);
-    Serial.print(buf);
+    theConsole->print(buf);
 }
 #else
 void debugout(const char *fmt __attribute__ ((unused)), ...)
@@ -279,15 +286,14 @@ void resetArduino(void) __attribute__((weak));
 
 void setup(void)
 {
-    for ( uint8_t i = 0; i < 20; i++ )
-    {
-        pinMode(i, OUTPUT);   // To save power
-    }
-    Serial.begin(9600);
+    pinMode(ARDUINO_LED_PIN , OUTPUT);
+    ConsoleBegin(9600);
+#ifndef SOFTCONSOLE
     if (  ! theConsoleFlag  && !theDebugFlag )
     {
         power_usart0_disable();       // Serial
     }
+#endif
     start();
     theApplication->enableInterrupts();
     theApplication->initialize();
@@ -352,7 +358,7 @@ Application::~Application(void)
 // initialize
 void Application::initialize(void)
 {
-    DebugPrint(F("\n\n_/_/_/ KashiwaGeeksFrame's TaskManager starts. _/_/_/\r\n\n\n"));
+    DebugPrint(F("\n\n_/_/_/ KashiwaGeeks TaskManager starts. _/_/_/\r\n\n\n"));
 
     for (uint8_t i = 0; theTaskList[i].callback != 0; i++)
     {
@@ -411,6 +417,12 @@ void Application::run(void)
     }
 }
 
+// rerun
+void Application::rerun(void (*_callbackPtr)(), uint32_t second)
+{
+    _taskMgr->addTask(_callbackPtr, second, 0, 0);
+
+}
 
 //    systemSleep
 void Application::systemSleep(void)
@@ -420,7 +432,7 @@ void Application::systemSleep(void)
         sleep();   // set device low power mode
         _sleepMode = true;
     }
-    Serial.flush();
+    theConsole->flush();
     set_sleep_mode(SLEEP_MODE);
     sleep_enable();
     sleep_mode();   // sleep
@@ -521,27 +533,30 @@ void TaskManager::execute(void)
         }
 
         // Add the executed Event to the list.
-        uint32_t  elapse = theUTC - taskEv->_executedTime;
-        if ( elapse >= taskEv-> _reloadTime)
+        if ( taskEv->_reloadTime > 0 )
         {
-            taskEv->_remainTime = taskEv-> _reloadTime - elapse;
-        }
-        else
-        {
-            taskEv->_remainTime = 0;
-        }
-        taskEv->_isRunning = false;
-        taskEv->_next = 0;
+            uint32_t  elapse = theUTC - taskEv->_executedTime;
+            if ( elapse >= taskEv-> _reloadTime)
+            {
+                taskEv->_remainTime = taskEv-> _reloadTime - elapse;
+            }
+            else
+            {
+                taskEv->_remainTime = 0;
+            }
+            taskEv->_isRunning = false;
+            taskEv->_next = 0;
 
-        if (execList == 0)
-        {
-            execList = taskEv;
-            prevTaskEv = taskEv;
-        }
-        else
-        {
-            prevTaskEv->_next = taskEv;
-            prevTaskEv = taskEv;
+            if (execList == 0)
+            {
+                execList = taskEv;
+                prevTaskEv = taskEv;
+            }
+            else
+            {
+                prevTaskEv->_next = taskEv;
+                prevTaskEv = taskEv;
+            }
         }
     }
 

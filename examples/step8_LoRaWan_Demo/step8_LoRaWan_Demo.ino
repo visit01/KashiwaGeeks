@@ -1,14 +1,4 @@
- /*
- *                 MIT License
- *      Copyright (c) 2017 Tomoaki Yamaguchi
- *
- *   This software is released under the MIT License.
- *   http://opensource.org/licenses/mit-license.php
- *
- *   Created on: 2017/11/25
- *       Author: tomoaki@tomy-tech.com
- *
- */
+
 #include <KashiwaGeeks.h>
 
 ADB922S LoRa;
@@ -16,9 +6,9 @@ ADB922S LoRa;
 //================================
 //          Initialize Device Function
 //================================
-#define BPS_9600           9600
-#define BPS_19200       19200
-#define BPS_57600       57600
+#define BPS_9600       9600
+#define BPS_19200     19200
+#define BPS_57600     57600
 #define BPS_115200   115200
 
 void start()
@@ -38,7 +28,7 @@ void start()
     //power_twi_disable();           // I2C
 
     /*  setup ADB922S  */
-    if ( LoRa.begin(BPS_9600) == false )
+    if ( LoRa.begin(BPS_19200) == false )
     {
         while(true)
         {
@@ -49,9 +39,11 @@ void start()
         }
     }
 
+	/* set DR. therefor, a payload size is fixed. */
+    LoRa.setDr(dr3);  // dr0 to dr5
+
     /*  join LoRaWAN */
     LoRa.reconnect();
-
 
     /*  for BME280 initialize  */
      //bme.begin();
@@ -143,7 +135,7 @@ void task1(void)
     ConsolePrint(F("Pressure: %2d Pa\n"), bme_press);
     
     disableInterrupt();     //  INT0 & INT1 are disabled
-    LoRa.sendData(port, true, F("%04x%04x%06lx"), temp, humi, press);
+    LoRa.sendString(port, true, F("%04x%04x%06lx"), temp, humi, press);
     LoRa.checkDownLink();
     enableInterrupt();     //  INT0 & INT1 are enabled
 }
@@ -153,7 +145,7 @@ void task2(void)
 {
     ConsolePrint(F("\n  Task2 invoked\n\n"));
     disableInterrupt();     //  INT0 & INT1 are disabled
-    LoRa.sendDataConfirm(port, true, F("%04x%04x%06lx"), temp, humi, press);
+    LoRa.sendStringConfirm(port, true, F("%04x%04x%06lx"), temp, humi, press);
     LoRa.checkDownLink();
     enableInterrupt();     //  INT0 & INT1 are enabled
 }

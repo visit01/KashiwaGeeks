@@ -1,11 +1,5 @@
 /*
  * ADB922S.cpp
- * 
- *                 MIT License
- *      Copyright (c) 2017 Tomoaki Yamaguchi
- *
- *   This software is released under the MIT License.
- *   http://opensource.org/licenses/mit-license.php
  *
  *   Created on: 2017/11/25
  *       Author: tomoaki@tomy-tech.com
@@ -17,6 +11,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <ADB922S.h>
+#include <Payload.h>
 
 using namespace tomyApplication;
 extern int getFreeMemory(void);
@@ -37,11 +32,11 @@ const char* loraTxConfirmCmd = "lorawan tx cnf";
 //
 
 ADB922S::ADB922S(void):
-        _baudrate{9600}, _joinStatus{not_joined}, _txTimeoutValue{LoRa_RECEIVE_DELAY2}, _stat{0}
+        _baudrate{9600}, _joinStatus{not_joined}, _txTimeoutValue{LoRa_RECEIVE_DELAY2}, _stat{0}, _txFlg{false}
 {
     _serialPort = new SoftwareSerial(LoRa_Rx_PIN, LoRa_Tx_PIN);
     _txRetryCount = 1;
-    _maxPayloadSize = LoRa_MAX_PAYLOAD_SIZE;
+    _maxPayloadSize = LoRa_DEFAULT_PAYLOAD_SIZE;
 }
 
 ADB922S::~ADB922S(void)
@@ -143,12 +138,14 @@ uint8_t ADB922S::getTxRetryCount(void)
 
 void ADB922S::sleep(void)
 {
+    pinMode(LoRa_WAKEUP_PIN, OUTPUT);
     digitalWrite(LoRa_WAKEUP_PIN, LOW);
     send( F("mod sleep 1 1 0"), F(""), F(""), ECHOFLAG, LoRa_INIT_WAIT_TIME);
 }
 
 void ADB922S::wakeup(void)
 {
+    pinMode(LoRa_WAKEUP_PIN, OUTPUT);
     digitalWrite(LoRa_WAKEUP_PIN, HIGH);
     digitalWrite(LoRa_WAKEUP_PIN, LOW);
     clearCmd();
@@ -250,7 +247,7 @@ int ADB922S::send(String cmd, String resp1, String resp2 , bool echo, uint32_t t
     {
         endCmd = F("\r> ");
     }
-    _serialPort->listen();
+
     _serialPort->print(cmd);
     _serialPort->print(F("\r"));
     _serialPort->flush();
@@ -344,53 +341,50 @@ int ADB922S::send(const __FlashStringHelper* cmd, const __FlashStringHelper* res
 //  Return value: LoRa_RV_SUCCESS, LoRa_RV_DATA_TOO_LONG, LoRa_RV_NOT_JOINED, LoRa_RV_ERROR
 //
 //
-#define LORA_BUFF_LEN (20 + LoRa_MAX_PAYLOAD_SIZE+1 +1 )    // last 1 is for checking data length
-#define LORA_BINARY_BUFF_LEN (20 + LoRa_MAX_PAYLOAD_SIZE*2+1 +1 )
+//#define LORA_BUFF_LEN (20 + _maxPayloadSize+1 +1 )    // last 1 is for checking data length
+//#define LORA_BINARY_BUFF_LEN (20 + _maxPayloadSize*2+1 +1 )
 
-int ADB922S::sendData(uint8_t port, bool echo, const __FlashStringHelper* format,  ...)
+int ADB922S::sendString(uint8_t port, bool echo, const __FlashStringHelper* format,  ...)
 {
     va_list args;
     va_start(args, format);
-    int rc = transmitData(port, echo, false, format, args);
+    int rc = transmitString(port, echo, false, format, args);
     va_end(args);
 
     return rc;
 }
 
 
-int ADB922S::sendDataConfirm(uint8_t port, bool echo, const __FlashStringHelper* format,  ...)
+int ADB922S::sendStringConfirm(uint8_t port, bool echo, const __FlashStringHelper* format,  ...)
 {
     va_list args;
     va_start(args, format);
-    int rc = transmitData(port, echo, true, format, args);
+    int rc = transmitString(port, echo, true, format, args);
     va_end(args);
 
     return rc;
 }
 
-
-int ADB922S::sendBinary(uint8_t port, bool echo, uint8_t* binaryData, uint8_t dataLen)
+int ADB922S::sendPayload(uint8_t port, bool echo, Payload* payload)
 {
-    return transmitBinaryData(port, echo, false, binaryData, dataLen);
+    return transmitBinaryData(port, echo, false, payload->getRowData(), payload->getLen());
 }
 
 
-int ADB922S::sendBinaryConfirm(uint8_t port, bool echo, uint8_t* binaryData, uint8_t dataLen)
+int ADB922S::sendPayloadConfirm(uint8_t port, bool echo, Payload* payload)
 {
-    return transmitBinaryData(port, echo, true, binaryData, dataLen);
+    return transmitBinaryData(port, echo, true, payload->getRowData(), payload->getLen());
 }
 
-
-
-int ADB922S::transmitData(uint8_t port, bool echo, bool ack, const __FlashStringHelper* format, va_list args)
+int ADB922S::transmitString(uint8_t port, bool echo, bool confirm, const __FlashStringHelper* format, va_list args)
 {
-    char data[LORA_BUFF_LEN];
-    memset(data, 0, LORA_BUFF_LEN);
-    char buffer[LORA_BUFF_LEN];
+    char data[(22 + _maxPayloadSize * 2 )  ];
+    memset(data, 0, (22 + _maxPayloadSize * 2)  );
+    char buffer[(22 + _maxPayloadSize )  ];
     char* pos = 0;
     int len = 0;
 
-    if (ack)
+    if (confirm)
     {
         strcpy(data, loraTxConfirmCmd);
          pos = data  + strlen(loraTxConfirmCmd);
@@ -406,8 +400,9 @@ int ADB922S::transmitData(uint8_t port, bool echo, bool ack, const __FlashString
     pos = data + len;
 
     vsnprintf_P(pos, sizeof(data) - len, (const char*)format, args);
-    if ( strlen(data) >= LORA_BUFF_LEN )
+    if (  strlen(data) >= (size_t)(22 + _maxPayloadSize) )
     {
+        LoRaDebug(F("Error: Data is too long.\n"));
         _stat = LoRa_RC_DATA_TOO_LONG;
         goto exit;
     }
@@ -422,14 +417,16 @@ int ADB922S::transmitData(uint8_t port, bool echo, bool ack, const __FlashString
         }
     }
 
-    _stat = send(data, "tx_ok", "rx", echo, _txTimeoutValue, buffer, LORA_BUFF_LEN);
+    _stat = send(data, "tx_ok", "rx", echo, _txTimeoutValue, buffer, (20 + _maxPayloadSize+1 +1 )  );
     if ( _stat == LoRa_RC_SUCCESS && strncmp(buffer, "rx", 2) == 0 )
     {
         _downLinkData = String(buffer + 3);
+        _txFlg = true;
     }
     else
     {
         _downLinkData = String("");
+        _txFlg = false;
     }
 exit:
     return _stat;
@@ -437,23 +434,24 @@ exit:
 
 
 
-int ADB922S::transmitBinaryData(uint8_t port, bool echo, bool ack, uint8_t* binaryData, uint8_t dataLen)
+int ADB922S::transmitBinaryData(uint8_t port, bool echo, bool confirm, uint8_t* binaryData, uint8_t dataLen)
 {
     uint8_t*  bd = binaryData;
     size_t  len = 0;
     char* pos = 0;
-    char data[LORA_BINARY_BUFF_LEN];
-    memset(data, 0, LORA_BINARY_BUFF_LEN);
-    char buffer[LORA_BINARY_BUFF_LEN];
+    char data[(22 + _maxPayloadSize*2 )];
+    char buffer[(22 + _maxPayloadSize*2 )];
 
-    if ( dataLen > LoRa_MAX_PAYLOAD_SIZE )
+    memset(data, 0, (22 + _maxPayloadSize*2 ));
+
+    if ( dataLen > _maxPayloadSize )
     {
         LoRaDebug(F("Error: Data %d is too long.\n"), dataLen);
         _stat = LoRa_RC_DATA_TOO_LONG;
         goto exit;
     }
 
-    if (ack)
+    if (confirm)
     {
         strcpy(data, loraTxConfirmCmd);
          len = strlen(loraTxConfirmCmd);
@@ -466,34 +464,36 @@ int ADB922S::transmitBinaryData(uint8_t port, bool echo, bool ack, uint8_t* bina
          pos = data  + len;
     }
 
-    sprintf_P(pos, " %02x ", port);
-    pos = data + strlen(pos);
-
+    sprintf(pos, " %d ", port);
+    len = strlen(data);
+    pos = data + len;
     for ( uint8_t i = 0; i < dataLen; i++, bd++ )
     {
         sprintf(pos, "%02x", *bd);
         pos = data + strlen(data);
     }
 
-    _stat = send(data, "tx_ok", "rx", echo, _txTimeoutValue, buffer, LORA_BUFF_LEN);
+    _stat = send(data, "tx_ok", "rx", echo, _txTimeoutValue, buffer, (20 + _maxPayloadSize*2+1 +1 ) );
     if ( _stat == LoRa_RC_SUCCESS && strncmp(buffer, "rx", 2) == 0 )
     {
         _downLinkData = String(buffer + 3);
+        _txFlg = true;
     }
     else
     {
         _downLinkData = F("");
+        _txFlg = false;
     }
 exit:
     return _stat;
 }
 
-
-String ADB922S::getDownLinkPayload(void)
+Payload* ADB922S::getDownLinkPayload(void)
 {
-    return _downLinkData;
+    _payload.create(_maxPayloadSize);
+    getDownLinkBinaryData(_payload.getRowData());
+    return &_payload;
 }
-
 
 uint8_t ADB922S::getDownLinkPort( void)
 {
@@ -548,15 +548,17 @@ uint8_t ADB922S::ctoh(uint8_t ch)
 }
 
 
-bool ADB922S::setDr(LoRaDR dr)
+int ADB922S::setDr(LoRaDR dr)
 {
     char  cmd[18];
     sprintf(cmd, "lorawan set_dr %d",  dr);
     if ( send(cmd, F("Ok"), F(""), ECHOFLAG, LoRa_INIT_WAIT_TIME) == 0 )
     {
-        return true;
+        uint8_t pll[] = { 0, 0, 11, 53, 125, 242 };
+        _maxPayloadSize = pll[dr];
+        return _maxPayloadSize;
     }
-    return false;
+    return -1;
 }
 
 bool ADB922S::setAdr(bool onOff)
@@ -660,7 +662,7 @@ uint16_t ADB922S::getDowncnt(void)
 
 void ADB922S::checkDownLink(void)
 {
-    if ( _stat == LoRa_RC_SUCCESS )
+    if ( _stat == LoRa_RC_SUCCESS && _txFlg == true )
     {
         uint8_t port = getDownLinkPort();
         if ( port )
@@ -675,6 +677,7 @@ void ADB922S::checkDownLink(void)
             }
         }
     }
+    _txFlg = false;
 }
 
 

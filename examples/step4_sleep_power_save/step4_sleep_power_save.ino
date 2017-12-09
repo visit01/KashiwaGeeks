@@ -2,7 +2,7 @@
 
 void start(void)
 {
-  Serial.begin(57600);
+    ConsoleBegin(57600);
   //DisableConsole();
   //DisableDebug();
 

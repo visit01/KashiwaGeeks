@@ -40,7 +40,7 @@ void start()
      //bme.begin();
 
     /*  WDTのインターバル設定 1, 2, 4 or 8 秒のいずれか  */
-    setWDT(2);    
+    //setWDT(2);    
 }
 
 //================================
@@ -94,8 +94,8 @@ void sendTemp()
   unsigned long press = bme_press * 100;
 
   // LoRaWANでデータを送信する
-  //LoRa.sendData(port, true, F("%04x%04x%06lx"), temp, humi, press);
-  LoRa.sendDataConfirm(port, true, F("%04x%04x%06lx"), temp, humi, press);
+  //LoRa.sendString(port, true, F("%04x%04x%06lx"), temp, humi, press);
+  LoRa.sendStringConfirm(port, true, F("%04x%04x%06lx"), temp, humi, press);
 }
 
 /*   End of Program  */

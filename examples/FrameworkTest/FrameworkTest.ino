@@ -1,11 +1,5 @@
 /*
  *   FrameworkTest.ino
- * 
- *                 MIT License
- *      Copyright (c) 2017 Tomoaki Yamaguchi
- *
- *   This software is released under the MIT License.
- *   http://opensource.org/licenses/mit-license.php
  *
  *   Created on: 2017/11/25
  *       Author: tomoaki@tomy-tech.com
@@ -21,7 +15,7 @@
 
 void setupDevice()
 {
-    Serial.begin(BPS_57600);
+    ConsoleBegin(BPS_57600);
     //DisableConsole();
     //DisableDebug();
 
