@@ -1,8 +1,4 @@
-/*
- *   Created on: 2017/11/25
- *       Author: tomoaki@tomy-tech.com
- *
- */
+
 #include <KashiwaGeeks.h>
 
 ADB922S LoRa;
@@ -137,7 +133,7 @@ void task1(void)
     ConsolePrint(F("Pressure: %2d Pa\n"), bme_press);
     
     disableInterrupt();     //  INT0 & INT1 are disabled
-    LoRa.sendData(port, true, F("%04x%04x%06lx"), temp, humi, press);
+    LoRa.sendString(port, true, F("%04x%04x%06lx"), temp, humi, press);
     LoRa.checkDownLink();
     enableInterrupt();     //  INT0 & INT1 are enabled
 }
@@ -147,7 +143,7 @@ void task2(void)
 {
     ConsolePrint(F("\n  Task2 invoked\n\n"));
     disableInterrupt();     //  INT0 & INT1 are disabled
-    LoRa.sendDataConfirm(port, true, F("%04x%04x%06lx"), temp, humi, press);
+    LoRa.sendStringConfirm(port, true, F("%04x%04x%06lx"), temp, humi, press);
     LoRa.checkDownLink();
     enableInterrupt();     //  INT0 & INT1 are enabled
 }

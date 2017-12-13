@@ -1,8 +1,3 @@
-/* 
- *   Created on: 2017/11/25
- *       Author: tomoaki@tomy-tech.com
- *
- */
 
 #include <KashiwaGeeks.h>
 
@@ -111,8 +106,8 @@ void sendTemp()
   unsigned int humi = bme_humi * 100;
   unsigned long press = bme_press * 100;
 
-  //LoRa.sendData(port, true, F("%04x%04x%06lx"), temp, humi, press);
-  LoRa.sendDataConfirm(port, true, F("%04x%04x%06lx"), temp, humi, press);
+  //LoRa.sendString(port, true, F("%04x%04x%06lx"), temp, humi, press);
+  LoRa.sendStringConfirm(port, true, F("%04x%04x%06lx"), temp, humi, press);
 }
 
 /*-------------------------------------------------------------*/
