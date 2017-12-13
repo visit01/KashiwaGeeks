@@ -15,7 +15,7 @@
 //
 
 #define SHOW_LORA_TRANSACTION
-//#define FREE_MEMORY_CHECK
+#define FREE_MEMORY_CHECK
 //#define SHOW_TASK_LIST
 //#define SHOW_SYSTIME
 
@@ -27,14 +27,6 @@
 #define SLEEP_MODE   SLEEP_MODE_PWR_DOWN
 //#define SLEEP_MODE   SLEEP_MODE_STANDBY
 //#define SLEEP_MODE   SLEEP_MODE_PWR_SAVE
-
-
-//
-//  LoRaWAN defines
-//
-
-#define LoRa_MAX_PAYLOAD_SIZE    64
-
 
 
 #endif /* LIBRARIES_KASHIWAGEEKS_APPDEFINE_H_ */

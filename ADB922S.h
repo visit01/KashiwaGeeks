@@ -16,9 +16,7 @@ namespace tomyApplication
 //
 //  LoRaWAN defines
 //
-#ifndef LoRa_MAX_PAYLOAD_SIZE 
-#define LoRa_MAX_PAYLOAD_SIZE      64
-#endif
+#define LoRa_DEFAULT_PAYLOAD_SIZE      11
 
 #define LoRa_INIT_WAIT_TIME      1000
 #define LoRa_SERIAL_WAIT_TIME    2000
@@ -47,7 +45,7 @@ namespace tomyApplication
 
 typedef enum
 {
-    dr0, dr1, dr2, dr3, dr4, dr5, dr6
+    dr0, dr1, dr2, dr3, dr4, dr5
 }LoRaDR;
 
 typedef enum
@@ -75,14 +73,14 @@ public:
     bool begin(uint32_t baudrate = 9600, uint8_t retryTx = 1 );
     bool connect(void);
     bool reconnect(void);
-    int sendData(uint8_t port, bool echo, const __FlashStringHelper* format, ...);
+    int sendString(uint8_t port, bool echo, const __FlashStringHelper* format, ...);
     int sendBinary(uint8_t port, bool echo, uint8_t* data, uint8_t dataLen);
-    int sendDataConfirm(uint8_t port, bool echo, const __FlashStringHelper* format, ...);
+    int sendPayload(uint8_t port, bool echo, Payload* payload);
+    int sendStringConfirm(uint8_t port, bool echo, const __FlashStringHelper* format, ...);
     int sendBinaryConfirm(uint8_t port, bool echo, uint8_t* data, uint8_t dataLen);
-    int sendMsgPack(uint8_t port, bool echo, Payload* data);
-    int sendMsgPackConfirm(uint8_t port, bool echo, Payload* data);
+    int sendPayloadConfirm(uint8_t port, bool echo, Payload* payload);
     uint8_t getDownLinkPort( void);
-    String getDownLinkPayload(void);
+    Payload* getDownLinkPayload(void);
     uint8_t getDownLinkBinaryData(uint8_t* data);
     String getDownLinkData(void);
     void checkDownLink(void);
@@ -95,7 +93,7 @@ public:
     bool setTxRetryCount(uint8_t retry);
     uint8_t getTxRetryCount(void);
 
-    bool setDr(LoRaDR dr);
+    int setDr(LoRaDR dr);
     bool setAdr(bool onOff);
     bool setLinkCheck(void);
     bool saveConfig(void);
@@ -122,13 +120,15 @@ private:
     void addPort(uint8_t port, void (*)());
 
     SoftwareSerial*  _serialPort;
-    uint32_t               _baudrate;
-    JoineStatus         _joinStatus;
-    uint8_t                 _txRetryCount;
-    uint8_t                _maxPayloadSize;
-    uint32_t              _txTimeoutValue;
-    String                 _downLinkData;
-    int                     _stat;
+    uint32_t  _baudrate;
+    JoineStatus  _joinStatus;
+    uint8_t  _txRetryCount;
+    uint8_t  _maxPayloadSize;
+    uint32_t  _txTimeoutValue;
+    String  _downLinkData;
+    Payload _payload;
+    int  _stat;
+    bool   _txFlg;
 };
 
 }
