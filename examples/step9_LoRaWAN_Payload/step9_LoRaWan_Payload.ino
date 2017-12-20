@@ -6,9 +6,9 @@ ADB922S LoRa;
 //================================
 //          Initialize Device Function
 //================================
-#define BPS_9600           9600
-#define BPS_19200       19200
-#define BPS_57600       57600
+#define BPS_9600       9600
+#define BPS_19200     19200
+#define BPS_57600     57600
 #define BPS_115200   115200
 
 void start()

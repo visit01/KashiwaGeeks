@@ -48,8 +48,8 @@ public:
     uint8_t getLen(void);
     void clear(void);
     void reacquire(void);
-    void copy(Payload*);
     void create(uint8_t len);
+    Payload& operator =(Payload& payload);
 private:
     void setByte(uint8_t* data, uint8_t len);
     uint8_t* getData(uint8_t* val, uint8_t len);

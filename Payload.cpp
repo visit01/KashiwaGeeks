@@ -116,9 +116,14 @@ void Payload::clear(void)
     _bPos = _gPos = 7;
 }
 
-void Payload::copy(Payload* pl )
+Payload& Payload::operator =(Payload& payload)
 {
-
+    this->erase();
+    this->create(payload._maxLen);
+    memcpy(this->_buff, payload._buff, this->_maxLen);
+    this->_bPos = payload._bPos;
+    this->_gPos = payload._gPos;
+    return *this;
 }
 
 uint8_t Payload::getLen(void)

@@ -346,7 +346,7 @@ int ADB922S::sendString(uint8_t port, bool echo, const __FlashStringHelper* form
 {
     va_list args;
     va_start(args, format);
-    int rc = transmitData(port, echo, false, format, args);
+    int rc = transmitString(port, echo, false, format, args);
     va_end(args);
 
     return rc;
@@ -357,7 +357,7 @@ int ADB922S::sendStringConfirm(uint8_t port, bool echo, const __FlashStringHelpe
 {
     va_list args;
     va_start(args, format);
-    int rc = transmitData(port, echo, true, format, args);
+    int rc = transmitString(port, echo, true, format, args);
     va_end(args);
 
     return rc;
@@ -386,7 +386,7 @@ int ADB922S::sendPayloadConfirm(uint8_t port, bool echo, Payload* payload)
     return transmitBinaryData(port, echo, true, payload->getRowData(), payload->getLen());
 }
 
-int ADB922S::transmitData(uint8_t port, bool echo, bool ack, const __FlashStringHelper* format, va_list args)
+int ADB922S::transmitString(uint8_t port, bool echo, bool ack, const __FlashStringHelper* format, va_list args)
 {
     char data[(20 + _maxPayloadSize+1 +1 )  ];
     memset(data, 0, (20 + _maxPayloadSize+1 +1 )  );

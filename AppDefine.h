@@ -15,7 +15,7 @@
 //
 
 #define SHOW_LORA_TRANSACTION
-#define FREE_MEMORY_CHECK
+//#define FREE_MEMORY_CHECK
 //#define SHOW_TASK_LIST
 //#define SHOW_SYSTIME
 
@@ -28,5 +28,12 @@
 //#define SLEEP_MODE   SLEEP_MODE_STANDBY
 //#define SLEEP_MODE   SLEEP_MODE_PWR_SAVE
 
+
+//
+//  LoRaWAN device
+//
+
+#include <ADB922S.h>
+//#include <RAK811.h>
 
 #endif /* LIBRARIES_KASHIWAGEEKS_APPDEFINE_H_ */
