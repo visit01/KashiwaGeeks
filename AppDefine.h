@@ -30,11 +30,10 @@
 
 
 //
-//  LoRaWAN defines
+//  LoRaWAN device
 //
 
-#define LoRa_MAX_PAYLOAD_SIZE    64
-
-
+#include <ADB922S.h>
+//#include <RAK811.h>
 
 #endif /* LIBRARIES_KASHIWAGEEKS_APPDEFINE_H_ */

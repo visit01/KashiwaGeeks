@@ -13,11 +13,10 @@ ADB922S KEYWORD1
 begin KEYWORD2
 connect KEYWORD2
 reconnect KEYWORD2
-sendData KEYWORD2
-sendBinary KEYWORD2
-sendDataConfirm KEYWORD2
-sendBinaryConfirm KEYWORD2
-getDownLinkData KEYWORD2
+sendString KEYWORD2
+sendPayload KEYWORD2
+sendStringConfirm KEYWORD2
+sendPayloadConfirm KEYWORD2
 sleep KEYWORD2
 wakeup KEYWORD2
 getHwModel KEYWORD2
@@ -25,6 +24,11 @@ getVersion KEYWORD2
 getEUI KEYWORD2
 getMaxPayloadSize KEYWORD2
 setTxRetryCount KEYWORD2
+checkDownLink  KEYWORD2
+setDr  KEYWORD2
+getDownLinkPayload  KEYWORD2
+getDownLinkPort  KEYWORD2
+getDownLinkData KEYWORD2
 ########################################
 # Constants (LITERAL1)
 ########################################
