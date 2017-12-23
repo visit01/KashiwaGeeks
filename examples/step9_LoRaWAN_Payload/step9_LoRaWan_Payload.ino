@@ -41,7 +41,7 @@ void start()
 
     /* set DR. therefor, a payload size is fixed. */
     LoRa.setDr(dr3);  // dr0 to dr5
-    
+
     /*  join LoRaWAN */
     LoRa.reconnect();
 
@@ -94,17 +94,17 @@ void int1D3(void)
 //================================
 void port14(void)
 {
-  ConsolePrint("%s\n", LoRa.getDownLinkData().c_str());
+  ConsolePrint(F("port14 data=%s\n"), LoRa.getDownLinkData().c_str());
   LedOn();
 }
 
 void port15(void)
 {
-  ConsolePrint("%s\n", LoRa.getDownLinkData().c_str());
+  ConsolePrint(F("port15 data=%s\n"), LoRa.getDownLinkData().c_str());
   LedOff();
 }
 
-PORT_LIST = { 
+PORT_LIST = {
   PORT(14, port14),  // port & callback
   PORT(15, port15),
   END_OF_PORT_LIST
@@ -114,12 +114,12 @@ PORT_LIST = {
 //    Functions to be executed periodically
 //================================
 
-#define LoRa_fPort_TEMP  12   
+#define LoRa_fPort_TEMP  12
 float bme_temp = 10;
 float bme_humi = 20;
 float bme_press = 50;
 
-short port = LoRa_fPort_TEMP;   
+short port = LoRa_fPort_TEMP;
 
 int16_t temp = bme_temp * 100;
 uint16_t humi = bme_humi * 100;
@@ -128,22 +128,22 @@ uint32_t press = bme_press * 100;
 
 /*-------------------------------------------------------------*/
 void task1(void)
-{   
+{
     char s[16];
     ConsolePrint(F("Temperature:  %s degrees C\n"), dtostrf(bme_temp, 6, 2, s));
     ConsolePrint(F("%%RH: %2d%s%%\n"), bme_humi);
     ConsolePrint(F("Pressure: %2d Pa\n"), bme_press);
-    
+
     disableInterrupt();     //  INT0 & INT1 are disabled
-      
+
     Payload pl(LoRa.getMaxPayloadSize());
     pl.set_int16(temp);
     pl.set_uint16(humi);
     pl.set_uint32(press);
-    
-    LoRa.sendPayload(port, true, &pl);    
+
+    LoRa.sendPayload(port, true, &pl);
     LoRa.checkDownLink();
-    
+
     enableInterrupt();     //  INT0 & INT1 are enabled
 }
 
