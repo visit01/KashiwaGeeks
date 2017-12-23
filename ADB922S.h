@@ -80,7 +80,6 @@ public:
     int sendBinary(uint8_t port, bool echo, uint8_t* data, uint8_t dataLen);
     int sendPayload(uint8_t port, bool echo, Payload* payload);
     int sendStringConfirm(uint8_t port, bool echo, const __FlashStringHelper* format, ...);
-    int sendBinaryConfirm(uint8_t port, bool echo, uint8_t* data, uint8_t dataLen);
     int sendPayloadConfirm(uint8_t port, bool echo, Payload* payload);
     uint8_t getDownLinkPort( void);
     Payload* getDownLinkPayload(void);

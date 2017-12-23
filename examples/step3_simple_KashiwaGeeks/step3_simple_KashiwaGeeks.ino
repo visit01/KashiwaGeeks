@@ -2,7 +2,7 @@
 
 void setup()
 {
-  Serial.begin(9600);
+    ConsoleBegin(9600);
 }
 
 int cnt = 0;

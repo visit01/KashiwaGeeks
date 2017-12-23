@@ -138,12 +138,14 @@ uint8_t ADB922S::getTxRetryCount(void)
 
 void ADB922S::sleep(void)
 {
+    pinMode(LoRa_WAKEUP_PIN, OUTPUT);
     digitalWrite(LoRa_WAKEUP_PIN, LOW);
     send( F("mod sleep 1 1 0"), F(""), F(""), ECHOFLAG, LoRa_INIT_WAIT_TIME);
 }
 
 void ADB922S::wakeup(void)
 {
+    pinMode(LoRa_WAKEUP_PIN, OUTPUT);
     digitalWrite(LoRa_WAKEUP_PIN, HIGH);
     digitalWrite(LoRa_WAKEUP_PIN, LOW);
     clearCmd();
@@ -245,7 +247,7 @@ int ADB922S::send(String cmd, String resp1, String resp2 , bool echo, uint32_t t
     {
         endCmd = F("\r> ");
     }
-    _serialPort->listen();
+
     _serialPort->print(cmd);
     _serialPort->print(F("\r"));
     _serialPort->flush();
@@ -363,18 +365,6 @@ int ADB922S::sendStringConfirm(uint8_t port, bool echo, const __FlashStringHelpe
     return rc;
 }
 
-
-int ADB922S::sendBinary(uint8_t port, bool echo, uint8_t* binaryData, uint8_t dataLen)
-{
-    return transmitBinaryData(port, echo, false, binaryData, dataLen);
-}
-
-
-int ADB922S::sendBinaryConfirm(uint8_t port, bool echo, uint8_t* binaryData, uint8_t dataLen)
-{
-    return transmitBinaryData(port, echo, true, binaryData, dataLen);
-}
-
 int ADB922S::sendPayload(uint8_t port, bool echo, Payload* payload)
 {
     return transmitBinaryData(port, echo, false, payload->getRowData(), payload->getLen());
@@ -386,15 +376,15 @@ int ADB922S::sendPayloadConfirm(uint8_t port, bool echo, Payload* payload)
     return transmitBinaryData(port, echo, true, payload->getRowData(), payload->getLen());
 }
 
-int ADB922S::transmitString(uint8_t port, bool echo, bool ack, const __FlashStringHelper* format, va_list args)
+int ADB922S::transmitString(uint8_t port, bool echo, bool confirm, const __FlashStringHelper* format, va_list args)
 {
-    char data[(20 + _maxPayloadSize+1 +1 )  ];
-    memset(data, 0, (20 + _maxPayloadSize+1 +1 )  );
-    char buffer[(20 + _maxPayloadSize+1 +1 )  ];
+    char data[(22 + _maxPayloadSize * 2 )  ];
+    memset(data, 0, (22 + _maxPayloadSize * 2)  );
+    char buffer[(22 + _maxPayloadSize )  ];
     char* pos = 0;
     int len = 0;
 
-    if (ack)
+    if (confirm)
     {
         strcpy(data, loraTxConfirmCmd);
          pos = data  + strlen(loraTxConfirmCmd);
@@ -410,8 +400,9 @@ int ADB922S::transmitString(uint8_t port, bool echo, bool ack, const __FlashStri
     pos = data + len;
 
     vsnprintf_P(pos, sizeof(data) - len, (const char*)format, args);
-    if (  strlen(data) >= (size_t)(20 + _maxPayloadSize+1 +1 ) )
+    if (  strlen(data) >= (size_t)(22 + _maxPayloadSize) )
     {
+        LoRaDebug(F("Error: Data is too long.\n"));
         _stat = LoRa_RC_DATA_TOO_LONG;
         goto exit;
     }
@@ -448,11 +439,10 @@ int ADB922S::transmitBinaryData(uint8_t port, bool echo, bool confirm, uint8_t* 
     uint8_t*  bd = binaryData;
     size_t  len = 0;
     char* pos = 0;
-    char data[(20 + _maxPayloadSize*2+1 +1 )];
-    char buffer[(20 + _maxPayloadSize*2+1 +1 )];
+    char data[(22 + _maxPayloadSize*2 )];
+    char buffer[(22 + _maxPayloadSize*2 )];
 
-    memset(data, 0, (20 + _maxPayloadSize*2+1 +1 ));
-
+    memset(data, 0, (22 + _maxPayloadSize*2 ));
 
     if ( dataLen > _maxPayloadSize )
     {
@@ -477,7 +467,6 @@ int ADB922S::transmitBinaryData(uint8_t port, bool echo, bool confirm, uint8_t* 
     sprintf(pos, " %d ", port);
     len = strlen(data);
     pos = data + len;
-
     for ( uint8_t i = 0; i < dataLen; i++, bd++ )
     {
         sprintf(pos, "%02x", *bd);

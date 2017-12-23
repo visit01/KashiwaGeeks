@@ -28,7 +28,7 @@ void start()
     //power_twi_disable();           // I2C
 
     /*  setup ADB922S  */
-    if ( LoRa.begin(BPS_9600) == false )
+    if ( LoRa.begin(BPS_19200) == false )
     {
         while(true)
         {
@@ -39,9 +39,11 @@ void start()
         }
     }
 
+	/* set DR. therefor, a payload size is fixed. */
+    LoRa.setDr(dr3);  // dr0 to dr5
+
     /*  join LoRaWAN */
     LoRa.reconnect();
-
 
     /*  for BME280 initialize  */
      //bme.begin();

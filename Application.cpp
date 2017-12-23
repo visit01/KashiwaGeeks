@@ -358,7 +358,7 @@ Application::~Application(void)
 // initialize
 void Application::initialize(void)
 {
-    DebugPrint(F("\n\n_/_/_/ KashiwaGeeksFrame's TaskManager starts. _/_/_/\r\n\n\n"));
+    DebugPrint(F("\n\n_/_/_/ KashiwaGeeks TaskManager starts. _/_/_/\r\n\n\n"));
 
     for (uint8_t i = 0; theTaskList[i].callback != 0; i++)
     {
