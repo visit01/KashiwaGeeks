@@ -1,5 +1,6 @@
 KashiwaGeeks
 =================
+LoRaWAN Application framework for Arduino.
 This framwork consists of Application,LoRaWAN devices and Payload Classes.    
 These classes provide following functions:
   1. Power saving with various sleep modes.  
