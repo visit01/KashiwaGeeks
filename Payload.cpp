@@ -1,7 +1,5 @@
 /*
  * Payload.cpp
- * 
- * COPYRIGHT(c) 2017  tomoaki  < tomoaki@tomy-tech.com >
  *
  *  Created on: 2017/12/10
  *      Author: tomoaki
@@ -195,7 +193,8 @@ void Payload::set_float(float val)
 
 void Payload::set_uint4(uint8_t val)
 {
-    setByte(&val, 4);
+    uint8_t data = val;
+    setByte(&data, 4);
 }
 
 void Payload::set_uint8(uint8_t val)
@@ -277,13 +276,15 @@ float Payload::get_float(void)
 uint8_t Payload::get_uint4(void)
 {
     uint8_t val;
-   return *getData(&val, 4);
+    getData(&val, 4);
+    return val;
 }
 
 uint8_t Payload::get_uint8(void)
 {
     uint8_t val;
-    return *getData(&val, 8);
+   getData(&val, 8);
+   return val;
 }
 
 uint16_t Payload::get_uint16(void)
