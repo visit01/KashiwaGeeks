@@ -306,7 +306,6 @@ String Payload::get_string(void)
     String str ;
     char val;
     uint8_t len = get_uint4();
-    Serial.println(len);
     for(uint8_t i = 0; i < len; i++)
     {
         getByte((uint8_t*)&val, 8);
