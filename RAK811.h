@@ -77,17 +77,7 @@ typedef enum
 }CHID;
 
 typedef  enum {
-    joined, not_joined
-}JoineStatus;
 
-typedef struct PortList
-{
-    uint8_t port;
-    void (*callback)(void);
-} PortList_t;
-#endif
-
-#define LORA_TYPES
 
 //
 //
@@ -104,7 +94,7 @@ public:
     bool connect(void);
 
     int sendString(uint8_t port, bool echo, const __FlashStringHelper* format, ...);
-    int sendStringConfirm(uint8_t port, bool echo, const __FlashStringHelper* format, ...);
+    int sendStringConfirm(uint8_t port, bool echo, const __FlparseashStringHelper* format, ...);
     int sendPayload(uint8_t port, bool echo, Payload* payload);
     int sendPayloadConfirm(uint8_t port, bool echo, Payload* payload);
 
