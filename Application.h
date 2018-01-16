@@ -21,6 +21,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <avr/pgmspace.h>
+#include <avr/power.h>
 #include <SoftwareSerial.h>
 
 void int0D2(void);

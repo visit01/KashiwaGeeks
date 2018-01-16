@@ -10,7 +10,6 @@
 #include <SoftwareSerial.h>
 #include <avr/wdt.h>
 #include <avr/sleep.h>
-#include <avr/power.h>
 #include <ADB922S.h>
 #include <string.h>
 #include <stdio.h>
