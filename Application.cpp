@@ -66,12 +66,12 @@ void setWDT(uint8_t sec)
     }
     else if ( sec == 4 )
     {
-        theWDTCSR = WDT_VAL_2S;
+        theWDTCSR = WDT_VAL_4S;
         theWdtSecs = 4;
     }
     else if ( sec == 8 )
     {
-        theWDTCSR = WDT_VAL_4S;
+        theWDTCSR = WDT_VAL_8S;
         theWdtSecs = 8;
     }
     else
@@ -286,15 +286,19 @@ void resetArduino(void) __attribute__((weak));
 void setup(void)
 {
     pinMode(ARDUINO_LED_PIN , OUTPUT);
+    pinMode(2, INPUT_PULLUP);
+    pinMode(3, INPUT_PULLUP);
+
     ConsoleBegin(9600);
+
 #ifndef SOFTCONSOLE
     if (  ! theConsoleFlag  && !theDebugFlag )
     {
         power_usart0_disable();       // Serial
     }
 #endif
+
     start();
-    theApplication->enableInterrupts();
     theApplication->initialize();
     startWatchdog();
 }
@@ -354,10 +358,10 @@ Application::~Application(void)
     delete _taskMgr;
 }
 
-// initialize
+
 void Application::initialize(void)
 {
-    DebugPrint(F("\n\n_/_/_/ KashiwaGeeks TaskManager starts. _/_/_/\r\n\n\n"));
+    DebugPrint(F("\n\n_/_/_/ KashiwaGeeks 0.5.0 _/_/_/\r\n\n\n"));
 
     for (uint8_t i = 0; theTaskList[i].callback != 0; i++)
     {
@@ -368,22 +372,31 @@ void Application::initialize(void)
         }
         _taskMgr->addTask(theTaskList[i].callback, theTaskList[i].start, theTaskList[i].interval, executedTime);
 
-#ifdef SHOW_TASK_LIST
+        #ifdef SHOW_TASK_LIST
         _taskMgr->printTaskEvents();
-#endif
+        #endif
     }
 }
 
-//    run
+
 void Application::run(void)
 {
     systemSleep();
 
+    if (theIntStat == INT_INT0)
+    {
+        checkInt(2);
+    }
+    else if (theIntStat == INT_INT1)
+    {
+        checkInt(3);
+    }
+
     if ( theWdtStat )
     {
-#if defined( SHOW_TASK_LIST ) || defined( SHOW_SYSTIME)
+        #if defined( SHOW_TASK_LIST ) || defined( SHOW_SYSTIME)
         ConsolePrint( F("\nSystem Time:%ld elapse:%ld[sec]\n"),theUTC, elapseTime());
-#endif
+        #endif
         if ( _sleepMode )
         {
             wakeup();
@@ -392,38 +405,15 @@ void Application::run(void)
         _taskMgr->execute();
         theWdtStat = false;
     }
-    else if (theIntStat == INT_INT0)
-    {
-        if ( _sleepMode )
-        {
-            wakeup();
-            _sleepMode = false;
-        }
-        disableInterrupts();
-        int0D2();
-        enableInterrupts();
-    }
-    else if (theIntStat == INT_INT1)
-    {
-        if ( _sleepMode )
-        {
-            wakeup();
-            _sleepMode = false;
-        }
-        disableInterrupts();
-        int1D3();
-        enableInterrupts();
-    }
 }
 
-// rerun
+
 void Application::rerun(void (*_callbackPtr)(), uint32_t second)
 {
     _taskMgr->addTask(_callbackPtr, second, 0, 0);
-
 }
 
-//    systemSleep
+
 void Application::systemSleep(void)
 {
     if ( !_sleepMode )
@@ -434,26 +424,56 @@ void Application::systemSleep(void)
     theConsole->flush();
     set_sleep_mode(SLEEP_MODE);
     sleep_enable();
+    enableInterrupts();
     sleep_mode();   // sleep
     sleep_disable(); // wakeup by WDT & INT0 or INT1
+    disableInterrupts();
 }
 
-//    disableInterrupts
+void Application::checkInt(uint8_t pin)
+{
+    indicator(true);
+    delay(30);
+    while ( true )
+    {
+        if ( digitalRead(pin) == HIGH )
+        {
+            break;
+        }
+    }
+    indicator(false);
+
+    if ( _sleepMode )
+    {
+        wakeup();
+        _sleepMode = false;
+    }
+
+    if ( pin == 2 )
+    {
+        int0D2();
+    }
+    else
+    {
+        int1D3();
+    }
+    theIntStat = INT_INIT;
+}
+
 void Application::disableInterrupts(void)
 {
     detachInterrupt(0);
     detachInterrupt(1);
 }
 
-//    enableInterrupts
+
 void Application::enableInterrupts(void)
 {
-    theIntStat = INT_INIT;
-    attachInterrupt(0, interrupt0Handler, RISING);
-    attachInterrupt(1, interrupt1Handler, RISING);
+    attachInterrupt(0, interrupt0Handler, LOW);
+    attachInterrupt(1, interrupt1Handler, LOW);
 }
 
-//    indicator
+
 void Application::indicator(bool onoff)
 {
     if (onoff)
@@ -466,11 +486,13 @@ void Application::indicator(bool onoff)
     }
 }
 
-//   getElapseTime
+
 uint32_t Application::getElapseTime(void)
 {
     return elapseTime();
 }
+
+
 
 //
 //
@@ -888,4 +910,3 @@ void TaskEvent::setRemainTime(uint32_t sec)
 {
     _remainTime = sec;
 }
-

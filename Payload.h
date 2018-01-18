@@ -29,6 +29,7 @@ public:
     void set_uint4(uint8_t);
     void set_uint8(uint8_t);
     void set_uint16(uint16_t);
+    void set_uint24(uint32_t);
     void set_uint32(uint32_t);
     void set_string(String);
 
@@ -41,6 +42,7 @@ public:
     uint8_t get_uint4(void);
     uint8_t get_uint8(void);
     uint16_t get_uint16(void);
+    uint32_t get_uint24(void);
     uint32_t get_uint32(void);
     String get_string(void);
 

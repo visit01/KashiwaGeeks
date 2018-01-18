@@ -138,14 +138,12 @@ uint8_t ADB922S::getTxRetryCount(void)
 
 void ADB922S::sleep(void)
 {
-    pinMode(LoRa_WAKEUP_PIN, OUTPUT);
     digitalWrite(LoRa_WAKEUP_PIN, LOW);
     send( F("mod sleep 1 1 0"), F(""), F(""), ECHOFLAG, LoRa_INIT_WAIT_TIME);
 }
 
 void ADB922S::wakeup(void)
 {
-    pinMode(LoRa_WAKEUP_PIN, OUTPUT);
     digitalWrite(LoRa_WAKEUP_PIN, HIGH);
     digitalWrite(LoRa_WAKEUP_PIN, LOW);
     clearCmd();
@@ -234,6 +232,8 @@ int ADB922S::send(String cmd, String resp1, String resp2 , bool echo, uint32_t t
     int rc = 0;
     String  endCmd;
 
+    _serialPort->listen();
+
     if ( echo )
     {
         ConsolePrint(F("\nSend  =>%s<=\n"), cmd.c_str());
@@ -251,7 +251,7 @@ int ADB922S::send(String cmd, String resp1, String resp2 , bool echo, uint32_t t
     _serialPort->print(cmd);
     _serialPort->print(F("\r"));
     _serialPort->flush();
-    delay(100);
+    delay(200);
 
     // Recive a response from the module.
     tim = millis() + time + 100;
@@ -325,7 +325,6 @@ int ADB922S::send(String cmd, String resp1, String resp2 , bool echo, uint32_t t
 #endif
     return rc;
 }
-
 
 int ADB922S::send(const __FlashStringHelper* cmd, const __FlashStringHelper* resp1, const __FlashStringHelper* resp2, bool echo, uint32_t timeout, char* returnVal, uint8_t len)
 {

@@ -14,12 +14,12 @@ void start()
 {
     /*  Setup console */
 
-    Serial.begin(BPS_57600);
+    ConsoleBegin(BPS_57600);
 
     //DisableConsole();
     //DisableDebug();
 
-    ConsolePrint(F("**** Start*****\n"));
+    ConsolePrint(F("**** Step5 Starts*****\n"));
 
     /*  LoRaWANシールドのインスタンスを初期化  */
     if ( LoRa.begin(BPS_19200) == false )
@@ -35,9 +35,6 @@ void start()
 
     /*  LoRaWANにJOIN  */
     LoRa.reconnect();
-
-    /*  for BME280 initialize  */
-     //bme.begin();
 
     /*  WDTのインターバル設定 1, 2, 4 or 8 秒のいずれか  */
     //setWDT(2);    
@@ -56,9 +53,7 @@ void task1(void)
    ConsolePrint(F("%%RH: %2d%s%%\n"), bme_humi);
    ConsolePrint(F("Pressure: %2d Pa\n"), bme_press);
 
-   disableInterrupt();    //  INT0 & INT1 割込み禁止
    sendTemp();            // 　LoRaWAN送信処理
-   enableInterrupt();     //  INT0 & INT1 割込み禁止解除
 }
 
 /*-------------------------------------------------------------*/

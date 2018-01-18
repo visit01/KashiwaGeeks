@@ -2,6 +2,8 @@
 
 void start(void)
 {
+    // Baudrate is 57600, not 9600 any more
+
     ConsoleBegin(57600);
   //DisableConsole();
   //DisableDebug();
@@ -41,8 +43,12 @@ TASK(func1, 0, 5),
  * }
  ****************/
 
-// さらに割込み機能も試してみよう。
-// (D2ピンに5Vを入力する)
 
+// uncomment the line8, then check ConsolePrint is disabled.
+// uncomment the line9, then nothing shown on the screen.
+
+// Check the interruption
+// 1) connect D2 pin to the GND.
+// 2) connect D3 pin to the GND.
 
 

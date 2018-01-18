@@ -14,11 +14,11 @@ ADB922S LoRa;
 void start()
 {
     /*  Setup console */
-    Serial.begin(BPS_57600);
+    ConsoleBegin(BPS_57600);
     //DisableConsole();
     //DisableDebug();
 
-    ConsolePrint(F("**** Start*****\n"));
+    ConsolePrint(F("**** Step6 Starts*****\n"));
 
     /*  setup Power save Devices */
     //power_adc_disable();          // ADC converter
@@ -41,10 +41,6 @@ void start()
 
     /*  join LoRaWAN */
     LoRa.reconnect();
-
-
-    /*  for BME280 initialize  */
-     //bme.begin();
 
     /*  seetup WDT interval to 1, 2, 4 or 8 seconds  */
     //setWDT(8);    // set to 8 seconds
@@ -129,9 +125,7 @@ void task1(void)
     ConsolePrint(F("%%RH: %2d%s%%\n"), bme_humi);
     ConsolePrint(F("Pressure: %2d Pa\n"), bme_press);
 
-   disableInterrupt();     //  INT0 & INT1 are disabled
    sendTemp();              // Send Data via LoRaWAN
-   enableInterrupt();     //  INT0 & INT1 are enabled
 }
 
 /*-------------------------------------------------------------*/

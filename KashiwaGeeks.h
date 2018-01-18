@@ -16,8 +16,8 @@ using namespace tomyApplication;
 extern Application *theApplication;
 
 uint32_t getSysTime(void);
-void DisableConsole(void);
-void DisableDebug(void);
+void DisableConsole();
+void DisableDebug();
 void ConsoleBegin(unsigned long baud);
 void DebugPrint(const char *fmt, ...);
 void DebugPrint(const __FlashStringHelper *format, ...);

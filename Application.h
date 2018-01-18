@@ -85,13 +85,14 @@ public:
     void initialize( void);
     void run(void);
     void rerun(void (*_callbackPtr)(), uint32_t second);
-    void systemSleep(void);
-    void disableInterrupts(void);
-    void enableInterrupts(void);
     void indicator(bool onoff);
     void setWdtInterval(uint8_t second);
     uint32_t getElapseTime(void);
 private:
+    void systemSleep(void);
+    void checkInt(uint8_t pin);
+    void disableInterrupts(void);
+    void enableInterrupts(void);
     TaskManager *  _taskMgr;
     bool    _sleepMode;
 };

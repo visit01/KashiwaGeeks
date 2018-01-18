@@ -8,7 +8,8 @@ These classes provide following functions:
   3. Interrupt handling for INT0 and INT1.            
   4. Task execution control.       
   5. LoRaWAN devices control.    
-  6. Allow payload to be created bit by bit.     
+  6. Allow payload to be created bit by bit.   
+    
 
 ## 1. Application Class
 Application Class methods are all wrapped up by the following functions:    
@@ -82,7 +83,9 @@ ___
     
     
 ## 2. ADB922S Class methods    
-ADB922S represents an LoRaWAN Arduino Sheild which uses TLM922S device.    
+ADB922S represents an LoRaWAN Arduino Sheild which uses TLM922S device. Cut D2, D3 pins of the shield to be enabled the Interruptions(INT0 & INT1). Connect UNO's D2,D3 pins to the GND with switches.  
+
+ 
 ___    
     
 **1) bool begin(uint32_t baudrate = 9600, uint8_t retryTx = 1, uint8_t retryJoine = 1 );**    

@@ -14,11 +14,11 @@ ADB922S LoRa;
 void start()
 {
     /*  Setup console */
-    Serial.begin(BPS_57600);
+    ConsoleBegin(BPS_57600);
     //DisableConsole();
     //DisableDebug();
 
-    ConsolePrint(F("**** Start*****\n"));
+    ConsolePrint(F("**** Step9 Starts*****\n"));
 
     /*  setup Power save Devices */
     //power_adc_disable();       // ADC converter
@@ -45,9 +45,6 @@ void start()
     /*  join LoRaWAN */
     LoRa.reconnect();
 
-
-    /*  for BME280 initialize  */
-     //bme.begin();
 
     /*  seetup WDT interval to 1, 2, 4 or 8 seconds  */
     //setWDT(8);    // set to 8 seconds
@@ -81,11 +78,13 @@ void wakeup(void)
 void int0D2(void)
 {
   ConsolePrint(F("\nINT0 !!!\n"));
+  task1();
 }
 
 void int1D3(void)
 {
   ConsolePrint(F("\nINT1 !!!\n"));
+  task2();
 }
 
 
@@ -134,8 +133,6 @@ void task1(void)
     ConsolePrint(F("%%RH: %2d%s%%\n"), bme_humi);
     ConsolePrint(F("Pressure: %2d Pa\n"), bme_press);
 
-    disableInterrupt();     //  INT0 & INT1 are disabled
-
     Payload pl(LoRa.getMaxPayloadSize());
     pl.set_int16(temp);
     pl.set_uint16(humi);
@@ -143,18 +140,14 @@ void task1(void)
 
     LoRa.sendPayload(port, true, &pl);
     LoRa.checkDownLink();
-
-    enableInterrupt();     //  INT0 & INT1 are enabled
 }
 
 /*-------------------------------------------------------------*/
 void task2(void)
 {
     ConsolePrint(F("\n  Task2 invoked\n\n"));
-    disableInterrupt();     //  INT0 & INT1 are disabled
     LoRa.sendStringConfirm(port, true, F("%04X%04X%08X"), temp, humi, press);
     LoRa.checkDownLink();
-    enableInterrupt();     //  INT0 & INT1 are enabled
 }
 
 /*-------------------------------------------------------------*/
@@ -171,8 +164,8 @@ void task3(void)
 //===============================
 
 TASK_LIST = {
-        TASK(task1, 0, 15),
-        TASK(task2, 8, 15),
+        TASK(task1, 0, 20),
+        TASK(task2, 8, 20),
         //TASK(task3),
         END_OF_TASK_LIST
 };

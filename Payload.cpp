@@ -211,6 +211,15 @@ void Payload::set_uint16(uint16_t val)
      setByte(data + 1, 8);
 }
 
+void Payload::set_uint24(uint32_t val)
+{
+    uint8_t data[4];
+     setUint32(data, val);
+     setByte(data + 1, 8);
+     setByte(data + 2, 8);
+     setByte(data + 3, 8);
+}
+
 void Payload::set_uint32(uint32_t val)
 {
     uint8_t data[4];
@@ -291,6 +300,18 @@ uint16_t Payload::get_uint16(void)
 {
     uint8_t buf[2];
     uint16_t val = getUint16((const uint8_t*)getData(buf, 16));
+    return val;
+}
+
+uint32_t Payload::get_uint24(void)
+{
+    uint8_t buf[4];
+    uint8_t* p = buf + 1;
+    buf[0] = 0;
+     getByte(p++, 8);
+     getByte(p++, 8);
+     getByte(p, 8);
+    uint32_t val = getUint32(buf);
     return val;
 }
 
