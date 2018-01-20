@@ -26,66 +26,69 @@ ___
    
 **3) void ConsoleBegin(uint32_t baudrate)**    
 This function sets up console's baudrate in place of Serial.begin().    
-   
+___
     
-**4) void ConsolePrint(format, ...)**   
+**4) void ConsoleBegin(uint32_t baudrate,uint8_t RxPin, uint8_t TxPin)**    
+This function sets up console's baudrate in place of SoftwareSerial.begin().    
+___
+    
+**5) void ConsolePrint(format, ...)**   
 This function is used in place of Serial.print() that outputs variable arguments to Serial port specified with the format.     
 ___
     
-**5) void DebugPrint(format, ...)**   
+**6) void DebugPrint(format, ...)**   
 Same as ConsolePrint()    
 ___    
     
-**6) void DisableConsole(void)**   
+**7) void DisableConsole(void)**   
 This function terminates the output of ConsolePrint().   
 ___    
     
-**7) void DisableDebug(void)**   
+**8) void DisableDebug(void)**   
 This function terminates the output of DebugPrint().   
 To cut down power consumption while executing DisableDebug() and DisableCosole() at the same time, UART0 power is set off.    
 ___
     
-**8) void LedOn(void), LedOff(void)**     
+**9) void LedOn(void), LedOff(void)**     
 Turn Arduino's LED light on and off.    
 ___        
     
-**9) void sleep(void)**   
+**10) void sleep(void)**   
 This function is executed right before application goes to sleep. Any processes that are to be executed before sleep are programed in this function.    
 ___        
     
-**10) void wakeup(void)**   
+**11) void wakeup(void)**   
 This function is executed right after application comes out of sleep.    
 ___    
     
-**11) void int0D2(void)**   
+**12) void int0D2(void)**   
 This function is executed when digital pin2 becomes HIGH. After execution system goes back to sleep.    
 ___    
     
-**12) void int1D3(void)**   
+**13) void int1D3(void)**   
 This function is executed when digital pin3 becomes HIGH. After execution system goes back to sleep.        
 ___    
     
-**13) void setwdt(uint8_t seconds)**   
+**14) void setwdt(uint8_t seconds)**   
 This function sets watchdog timer in seconds. Default is set to 1 second, it can be set to 2, 4 and 8 seconds to further cut down power consumption.       
 ___    
     
-**14) TASL_LIST={TASK(callback, startTime, interval),...,END_OF_TASK_LIST};**   
+**15) TASL_LIST={TASK(callback, startTime, interval),...,END_OF_TASK_LIST};**   
 This statement repeatively executes the callback functions described in the list for a span of execution time(interval) specified. Start time can be set to start at differnt time so the process cycle do not overlap. 
 ___    
     
-**15) PORT_LIST={PORT(port, callback),...,END_OF_PORT_LIST};**    
+**16) PORT_LIST={PORT(port, callback),...,END_OF_PORT_LIST};**    
 This fucntion specifies process execution in accordance with the port from LoRaWAN DownLink data. This is used in CheckDownLink() method of LoRaWAN Device Class.    
 ___    
     
-**16) ReRun(callback, uint32_t startTime)**    
+**17) ReRun(callback, uint32_t startTime)**    
 This function executes the specified callback function after the time indicate in the startTime seconds.    
 ___    
     
     
 ## 2. ADB922S Class methods    
 ADB922S represents an LoRaWAN Arduino Sheild which uses TLM922S device. Cut D2, D3 pins of the shield to be enabled the Interruptions(INT0 & INT1). Connect UNO's D2,D3 pins to the GND with switches.  
-
- 
+  
 ___    
     
 **1) bool begin(uint32_t baudrate = 9600, uint8_t retryTx = 1, uint8_t retryJoine = 1 );**    
@@ -144,7 +147,8 @@ ___
 **Return Value LoRa_RC_ERROR:** other errors.    
 ___    
     
-**7)  int sendPayload(uint8_t port, bool echo, &Payload);
+**7)  int sendPayload(uint8_t port, bool echo, &Payload);**    
+    
 **Function:** Transmit a Payload instance.  11) getDownLinkData(void) can be used to check if the DownLink data is received.     
 **Parameter uint8_t port:** Data transmitted is sent to the application specified by the port.    
 **Parameter bool echo:** If true then data transmitted is outputed on console.      
@@ -256,13 +260,163 @@ ___
     
 ## 3. RAK811 Class methods    
 RAK811 represents an LoRaWAN Arduino Sheild which uses RAK811 device.   
-**Under development**
+
+___ 
+
+**1) bool begin(uint32_t baudrate = 9600, uint8_t retryTx = 1, uint8_t retryJoine = 1 );**    
+
+**Function:** Initialize ADB922S    
+**Parameter uint32_t bauderate:** bauderate of a sirial port, valid values are 9600, 19200, 57600, 115200.    
+**Parameter uint8_t retryTx:** transmission retry count, valid value range from 0 to 255.    
+**Parameter uint8_t retryJoin:** retry count of join.    
+**Return Value:** Success true, fail false.  
+___    
+    
+**2) bool connect(void);**    
+
+**Function:** Connect to the LoRaWAN. If the required keys not ready then execute join.    
+**Parameter:** None    
+**Return Value:** If joined once the true. In case of keys-not-ready and not able to join after retry join, then false.    
+___    
+    
+**3) bool reconnect(void);**    
+
+**Function:** Connect to the LoRaWAN. Keys ready or not, execute join.    
+**Prameter:** None    
+**Return value:** If joined once the true. Not able to join after retry join, then false.   
+___    
+    
+**4) uint8_t setDr(LoRaDR);**    
+
+**Function:** Setup DR rate. DR rate defines FRMPayload length.    
+**Parameter:** DR rate, dr0, dr1, dr2, dr3, dr4, dr5    
+**Return Value:** FRMPayload length, setup fail the -1.    
+___    
+    
+**5) int sendString(uint8_t port, bool echo, const __FlashStringHelper &format, ...);**    
+
+**Function:** Transmit String data. 11) getDownLinkData(void) can be used to check if the DownLink data is received.    
+**Parameter uint8_t port:** Data transmitted is sent to the application specified by the port.    
+**Parameter bool echo:** If true then data transmitted is outputed on console.   
+**Parameter format:** Format of transmitted data. same as format used in printf(). %f is not available.     
+**Parameter ... :** Variable arguments.    
+**Return Value LoRa_RC_SUCCESS:** when the transmition is normaly completed.    
+**Retrun Value LoRa_RC_DATA_TOO_LONG:** if the data transmitted is too long.    
+**Return Value LoRA_RC_NOT_JOINED:** if not joined.    
+**Return Value LoRa_RC_ERROR:** other errors.    
+___    
+    
+**6) int sendStringConfirm(uint8_t port, bool echo, const __FlashStringHelper &format, ...);**    
+
+**Function:** Transmit String data with confirmation request. 11) getDownLinkData(void) can be used to check if the DownLink data is received.   
+**Parameter uint8_t port:** Data transmitted is sent to the application specified by the port.    
+**Parameter bool echo:** If true then data transmitted is outputed on console.   
+**Parameter format:** Format of transmitted data. same as format used in printf(). %f is not available.     
+**Parameter ... :** Variable arguments.    
+**Return Value LoRa_RC_SUCCESS:** when the transmition is normaly completed.    
+**Retrun Value LoRa_RC_DATA_TOO_LONG:** if the data transmitted is too long.    
+**Return Value LoRA_RC_NOT_JOINED:** if not joined.    
+**Return Value LoRa_RC_ERROR:** other errors.    
+___    
+    
+**7)  int sendPayload(uint8_t port, bool echo, &Payload);**    
+    
+**Function:** Transmit a Payload instance.  11) getDownLinkData(void) can be used to check if the DownLink data is received.       
+**Parameter uint8_t port:** Data transmitted is sent to the application specified by the port.    
+**Parameter bool echo:** If true then data transmitted is outputed on console.      
+**Parameter Payload:** Pointer of a Payload instance.    
+**Return Value LoRa_RC_SUCCESS:** when the transmition is normaly completed.    
+**Retrun Value LoRa_RC_DATA_TOO_LONG:** if the data transmitted is too long.    
+**Return Value LoRA_RC_NOT_JOINED:** if not joined.    
+**Return Value LoRa_RC_ERROR:** other errors.  
+___
+    
+**8) int sendPayloadConfirm(uint8_t port, bool echo, &Payload);**    
+
+**Function:** Transmit a Payload instance with confirmation request.  11) getDownLinkData(void) can be used to check if the DownLink data is received.     
+**Parameter uint8_t port:** Data transmitted is sent to the application specified by the port.    
+**Parameter bool echo:** If true then data transmitted is outputed on console.      
+**Parameter Payload:** Pointer of a Payload instance.    
+**Return Value LoRa_RC_SUCCESS:** when the transmition is normaly completed.    
+**Retrun Value LoRa_RC_DATA_TOO_LONG:** if the data transmitted is too long.    
+**Return Value LoRA_RC_NOT_JOINED:** if not joined.    
+**Return Value LoRa_RC_ERROR:** other errors.    
+___    
+    
+**9)  Payload &getDownLinkPayload(void);**    
+    
+**Function:** Acquire a Payload instance from the DownLink data previously recieved.    
+**Parameter:** None    
+**Return Value:** Pointer of the Payload instance.  0, if no DownLink data from the previous received.    
+___
+    
+**10)  uint8_t getDownLinkPort( void);**    
+    
+**Function:** Acquire the port from previously received DownLink data.    
+**Parameter:** None    
+**Return Value:** Port(number), 0 if no data.    
+___  
+    
+**11)  String getDownLinkData(void);**    
+    
+**Function:** Acquire the string data excludeding port(number) from previously received DownLink data.    
+**Parameter:** None    
+**Return Value:** String excluding Port. Null string if no data.    
+___
+    
+**12) void sleep(void);**    
+    
+**Function:** Set to infinite deep sleep. ( D7Pin is used to wakeup)   
+**Parameter:** None    
+**Return value:** None    
+___
+    
+**13) void wakeup(void);**    
+     
+**Function:** Wake up from infinte deep sleep.    
+**Parameter:** None    
+**Return value:** None    
+___
+    
+**14)  void setConfig(String param);**    
+    
+**Function:** Set Configurations.        
+**Parameter String:** key:value[&key:value][&key:value]..    
+**Return Value:** none    
+___
+    
+**15)  String getConfig(String key);**    
+    
+**Function:** Acquire the Configuration value.    
+**Parameter String** Key of a configuration parameter.    
+**Return Value:** String of a configuration parameter.    
+    
+**16)  void getVersion(char &version, uint8_t length);**    
+      
+**Function:** Acquire the version of TLM922S.   
+**Parameter char &version:** Specified  return address fro the version.    
+**Parameter uint8_t length:** Maxmum length to obtain the version.    
+**Return Value:** String of version in the length specified returned in version argment.     
+___
+    
+**17)  uint8_t getMaxPayloadSize(void);**    
+    
+**Function:** Acquire the maximum transmittable payloadd length setten by setDR().    
+**Parameter:** None    
+**Return Value:** Transmittable Payload length.    
+___
+    
+**18)  void checkDownLink(void);**    
+    
+**Function:**  Excecutes the callback function that is linked to the specified port by PORT_LINK if DownLink data is received.    
+**Parameter:** None    
+**Return Value:** None    
 ___
     
 ## 4. Payload Calss methods    
 Payload Class represents FRMPayload. Maximum FRMPayload is 242 bytes.     
 To extend distance of transmission, Payload should be minimize as possible. (using Low DR rate)    
-This Class efficiently creates the on-bit-bool and 4-bits, 1-byte, 2-bytes, 4-bytes integer and unsinged integer in a way that eliminate the byte boundary of bits stream.    
+This Class efficiently creates the one-bit-bool and 4-bits, 1-byte, 2-bytes, 4-bytes integer and unsinged integer in a way that eliminate the byte boundary of bits stream.    
 ![image](https://user-images.githubusercontent.com/7830788/34324083-220a170c-e8a7-11e7-89d2-0ccbe2e26c2f.png)    
 
 ___

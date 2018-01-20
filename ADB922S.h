@@ -8,11 +8,12 @@
 
 #ifndef ADB922S_H_
 #define ADB922S_H_
-#include <AppDefine.h>
+#include <Application.h>
 #include <Payload.h>
 #include <SoftwareSerial.h>
 namespace tomyApplication
 {
+
 //
 //  LoRaWAN defines
 //
@@ -31,19 +32,21 @@ namespace tomyApplication
 #define LoRa_Tx_PIN               12
 #define LoRa_WAKEUP_PIN            7
 
+#ifndef LoRaDebug
 #ifdef SHOW_LORA_TRANSACTION
-#define LoRaDebug(...)  DebugPrint(__VA_ARGS__)
+#define LoRaDebug(...)  DebugPrint( __VA_ARGS__)
 #define ECHOFLAG  true
 #else
 #define LoRaDebug(...)
 #define ECHOFLAG  false
 #endif
+#endif
 
+#ifndef PORT_LIST
 #define PORT_LIST   PortList_t  thePortList[]
 #define PORT(...)         {__VA_ARGS__}
 #define END_OF_PORT_LIST  {0, 0}
 
-#ifndef LORA_TYPES
 typedef enum
 {
     dr0, dr1, dr2, dr3, dr4, dr5

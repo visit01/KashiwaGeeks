@@ -31,12 +31,21 @@ void sleep(void);
 void wakeup(void);
 void resetArduino(void);
 
+void DebugPrint(const __FlashStringHelper *format, ...);
+void ConsolePrint(const __FlashStringHelper *format, ...);
+void DebugPrint(const  char* format, ...);
+void ConsolePrint(const  char* format, ...);
+void ConsoleBegin(unsigned long baud);
+void ConsoleBegin(unsigned long baud, uint8_t rxpin, uint8_t txpin);
+void DisableConsole(void);
+void DisableDebug(void);
+
 namespace tomyApplication
 {
 
 #define ARDUINO_LED_PIN     13
-#define CONSOLE_Rx_PIN               11
-#define CONSOLE_Tx_PIN               12
+
+#define LOG_BUF_LEN 128
 
 /*======================================
  MACROs for the Appication
@@ -98,7 +107,7 @@ private:
 };
 
 /*============================================
- TaskManager
+  Class TaskManager
  ============================================*/
 class TaskEvent;
 
@@ -126,7 +135,7 @@ private:
 };
 
 /*============================================
- TaskEvent
+  Class  TaskEvent
  ============================================*/
 class TaskEvent
 {
@@ -148,6 +157,28 @@ private:
     static TaskManager* _taskMgr;
 };
 
+/*============================================
+  Class  SerialLog
+ ============================================*/
+class SerialLog
+{
+public:
+    SerialLog(void);
+    ~SerialLog(void);
+    void out(bool console,  uint8_t len, const char* fmt, va_list args);
+    void out(bool console,  uint8_t len, const __FlashStringHelper* fmt, va_list args);
+    void begin(unsigned long baud);
+    void begin(unsigned long baud, uint8_t rxpin, uint8_t txpin);
+    void disableDebug(void);
+    void disableConsole(void);
+    void savePower(void);
+private:
+    void print(char* buf);
+    SoftwareSerial* _serial;
+    bool _serialFlg;
+    bool _consoleFlg;
+    bool _debugFlg;
+};
 
 } /* tomyApplication */
 

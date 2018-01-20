@@ -37,17 +37,10 @@ volatile uint32_t theUTC = 0;
 volatile INT_stat_t theIntStat = INT_INIT;
 volatile bool theWdtStat = false;
 
-Application* theApplication = new Application();
-bool theConsoleFlag  = true;
-bool theDebugFlag  = true;
+tomyApplication::Application* theApplication = new tomyApplication::Application();
+tomyApplication::SerialLog* theLog = new tomyApplication::SerialLog();
+
 extern TaskList_t theTaskList[];
-
-#ifdef SOFTCONSOLE
-SoftwareSerial* theConsole = new SoftwareSerial(CONSOLE_Rx_PIN, CONSOLE_Tx_PIN);
-#else
-HardwareSerial* theConsole = &Serial;
-#endif
-
 
 /*=====================================
      Watchdog Tmer functions
@@ -151,94 +144,73 @@ void interrupt1Handler(void)
 /*=====================================
  Global functions
  ======================================*/
-#define BUF_LEN 128
-
 void DisableConsole(void)
 {
-    theConsoleFlag = false;
+    theLog->disableConsole();
 }
 
 void DisableDebug(void)
 {
-    theDebugFlag = false;
+    theLog->disableDebug();
 }
 
 void ConsoleBegin(unsigned long baud)
 {
-    theConsole->begin(baud);
+    theLog->begin(baud);
+}
+
+void ConsoleBegin(unsigned long baud, uint8_t rxpin, uint8_t txpin)
+{
+    theLog->begin(baud, rxpin, txpin);
 }
 
 void ConsolePrint(const char *fmt, ...)
 {
-    if ( theConsoleFlag )
-    {
-         char buf[BUF_LEN];
-         va_list args;
-         va_start(args, fmt);
-         vsnprintf(buf, sizeof(buf), fmt, args);
-         va_end(args);
-         theConsole->print(buf);
-    }
+     va_list args;
+     va_start(args, fmt);
+     theLog->out(true, LOG_BUF_LEN, fmt, args);
+     va_end(args);
 }
 
 void ConsolePrint(const __FlashStringHelper *fmt, ...)
 {
-   if ( theConsoleFlag )
-   {
-       char buf[BUF_LEN];
-       va_list args;
-        va_start(args, fmt);
-        vsnprintf_P(buf, sizeof(buf), (const char *)fmt, args);
-        va_end(args);
-        theConsole->print(buf);
-   }
+    va_list args;
+    va_start(args, fmt);
+    theLog->out(true, LOG_BUF_LEN, fmt, args);
+    va_end(args);
 }
 
 void DebugPrint(const char *fmt, ...)
 {
-    if ( theDebugFlag )
-   {
-      char buf[BUF_LEN];
-      va_list args;
-      va_start(args, fmt);
-      vsnprintf(buf, sizeof(buf), fmt, args);
-      va_end(args);
-      theConsole->print(buf);
-   }
+    va_list args;
+    va_start(args, fmt);
+    theLog->out(false, LOG_BUF_LEN, fmt, args);
+    va_end(args);
 }
 
 void DebugPrint(const __FlashStringHelper *fmt, ...)
 {
-    if ( theDebugFlag )
-   {
-       char buf[BUF_LEN];
-       va_list args;
-        va_start(args, fmt);
-        vsnprintf_P(buf, sizeof(buf), (const char *)fmt, args);
-        va_end(args);
-        theConsole->print(buf);
-   }
+    va_list args;
+    va_start(args, fmt);
+    theLog->out(false, LOG_BUF_LEN, fmt, args);
+    va_end(args);
 }
 
 #if defined( SHOW_TASK_LIST ) || defined( SHOW_SYSTIME)
 void debugout(const char *fmt, ...)
 {
-  char buf[BUF_LEN];
-  va_list args;
-  va_start(args, fmt);
-  vsnprintf(buf, sizeof(buf), fmt, args);
-  va_end(args);
-  theConsole->print(buf);
+    va_list args;
+    va_start(args, fmt);
+    theLog->out(false, LOG_BUF_LEN, fmt, args);
+    va_end(args);
 }
 
 void debugout(const __FlashStringHelper *fmt, ...)
 {
-   char buf[BUF_LEN];
-   va_list args;
+    va_list args;
     va_start(args, fmt);
-    vsnprintf_P(buf, sizeof(buf), (const char *)fmt, args);
+    theLog->out(false, LOG_BUF_LEN, fmt, args);
     va_end(args);
-    theConsole->print(buf);
 }
 #else
 void debugout(const char *fmt __attribute__ ((unused)), ...)
@@ -291,15 +263,10 @@ void setup(void)
 
     ConsoleBegin(9600);
 
-#ifndef SOFTCONSOLE
-    if (  ! theConsoleFlag  && !theDebugFlag )
-    {
-        power_usart0_disable();       // Serial
-    }
-#endif
 
     start();
     theApplication->initialize();
+    theLog->savePower();
     startWatchdog();
 }
 
@@ -361,7 +328,7 @@ Application::~Application(void)
 
 void Application::initialize(void)
 {
-    DebugPrint(F("\n\n_/_/_/ KashiwaGeeks 0.5.0 _/_/_/\r\n\n\n"));
+    DebugPrint(F("\n\n_/_/_/ KashiwaGeeks 0.6.1 _/_/_/\r\n\n\n"));
 
     for (uint8_t i = 0; theTaskList[i].callback != 0; i++)
     {
@@ -421,7 +388,7 @@ void Application::systemSleep(void)
         sleep();   // set device low power mode
         _sleepMode = true;
     }
-    theConsole->flush();
+    //theConsole->flush();
     set_sleep_mode(SLEEP_MODE);
     sleep_enable();
     enableInterrupts();
@@ -865,7 +832,7 @@ void TaskManager::printTaskEvents(void)
 #endif
 }
 
-///
+//
 //
 //    Class TaskEvent
 //
@@ -910,3 +877,90 @@ void TaskEvent::setRemainTime(uint32_t sec)
 {
     _remainTime = sec;
 }
+//
+//
+//    Class SerialLog
+//
+//
+SerialLog::SerialLog(void):
+        _serial{0}, _serialFlg{false}, _consoleFlg{true}, _debugFlg{true}
+{
+
+}
+
+SerialLog::~SerialLog(void)
+{
+
+}
+
+void SerialLog::begin(unsigned long baud, uint8_t rxpin, uint8_t txpin)
+{
+    _serial = new SoftwareSerial( rxpin, txpin);
+    _serial->begin(baud);
+    _serialFlg = true;
+}
+
+void SerialLog::begin(unsigned long baud)
+{
+    Serial.begin(baud);
+    _serialFlg = false;
+}
+
+void SerialLog::out(bool console, uint8_t len, const char* fmt, va_list args)
+{
+    if ( (console && _consoleFlg) || (!console && _debugFlg) )
+    {
+        char* buf = (char*)malloc(len);
+
+        vsnprintf(buf, len, fmt, args);
+        print(buf);
+        free(buf);
+    }
+}
+
+void SerialLog::out(bool console, uint8_t len, const  __FlashStringHelper* fmt, va_list args)
+{
+    if ( (console && _consoleFlg) || (!console && _debugFlg) )
+    {
+        char* buf = (char*)malloc(len);
+
+        vsnprintf_P(buf, len, (const char *)fmt, args);
+        print(buf);
+        free(buf);
+    }
+}
+
+void SerialLog::print(char* buf)
+{
+    if ( _serialFlg )
+    {
+        if ( _serial->isListening() )
+        {
+            _serial->listen();
+        }
+        _serial->print(buf);
+    }
+    else
+    {
+        Serial.print(buf);
+    }
+}
+
+void SerialLog::disableDebug(void)
+{
+    _debugFlg = false;
+}
+
+void SerialLog::disableConsole(void)
+{
+    _consoleFlg = false;
+}
+
+void SerialLog::savePower(void)
+{
+    if (  ! _consoleFlg  && !_debugFlg &&  !_serialFlg)
+    {
+        power_usart0_disable();       // Serial
+    }
+}
+

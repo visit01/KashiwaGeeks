@@ -17,11 +17,6 @@ using namespace tomyApplication;
 extern int getFreeMemory(void);
 extern PortList_t thePortList[];
 
-void DebugPrint(const __FlashStringHelper *format, ...);
-void ConsolePrint(const __FlashStringHelper *format, ...);
-void DebugPrint(const  char* format, ...);
-void ConsolePrint(const  char* format, ...);
-
 const char* loraTxUnconfirmCmd = "lorawan tx ucnf";
 const char* loraTxConfirmCmd = "lorawan tx cnf";
 

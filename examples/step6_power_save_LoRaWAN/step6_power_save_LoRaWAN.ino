@@ -18,7 +18,7 @@ void start()
     //DisableConsole();
     //DisableDebug();
 
-    ConsolePrint(F("**** Step6 Starts*****\n"));
+    ConsolePrint(F("**** step6_power_save_LoRaWAN *****\n"));
 
     /*  setup Power save Devices */
     //power_adc_disable();          // ADC converter

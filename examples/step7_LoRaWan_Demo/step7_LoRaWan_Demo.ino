@@ -18,7 +18,7 @@ void start()
     //DisableConsole();
     //DisableDebug();
 
-    ConsolePrint(F("**** Step7 Starts*****\n"));
+    ConsolePrint(F("**** Step7 LoRaWan_Demo*****\n"));
 
     /*  setup Power save Devices */
     //power_adc_disable();          // ADC converter

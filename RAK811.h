@@ -9,11 +9,12 @@
 #ifndef LIBRARIES_KASHIWAGEEKS_RAK811_H_
 #define LIBRARIES_KASHIWAGEEKS_RAK811_H_
 
-#include <AppDefine.h>
+#include <Application.h>
 #include <Payload.h>
 
 namespace tomyApplication
 {
+extern tomyApplication::SerialLog* theLog;
 //
 //  LoRaWAN defines
 //
@@ -34,6 +35,7 @@ namespace tomyApplication
 #define CODE_TX_LEN_LIMITE_ERR -13
 #define CODE_UNKNOWN_ERR -20
 
+// Event code
 #define STATUS_RECV_DATA 0
 #define STATUS_TX_COMFIRMED 1
 #define STATUS_TX_UNCOMFIRMED 2
@@ -46,26 +48,33 @@ namespace tomyApplication
 #define STATUS_P2PTX_COMPLETE 9
 #define STATUS_UNKNOWN 100
 
-// Event code
-#define LoRa_INIT_WAIT_TIME      1000
-#define LoRa_SERIAL_WAIT_TIME    2000
-#define LoRa_RECEIVE_DELAY2      5000
-#define JOIN__WAIT_TIME         30000
+#define LoRa_RC_SUCCESS            0
+#define LoRa_RC_DATA_TOO_LONG     -1
+#define LoRa_RC_NOT_JOINED        -2
+#define LoRa_RC_ERROR             -3
+
+// Timeout values
+#define LoRa_INIT_WAIT_TIME_RAK      2000
+#define LoRa_SERIAL_WAIT_TIME_RAK    3000
+#define LoRa_RECEIVE_DELAY2_RAK      5000
+#define JOIN__WAIT_TIME_RAK         30000
 
 // Debug log
+#ifndef LoRaDebug
 #ifdef SHOW_LORA_TRANSACTION
-#define LoRaDebug(...)  DebugPrint(__VA_ARGS__)
+#define LoRaDebug(...)  DebugPrint( __VA_ARGS__)
 #define ECHOFLAG  true
 #else
 #define LoRaDebug(...)
 #define ECHOFLAG  false
 #endif
+#endif
 
+#ifndef PORT_LIST
 #define PORT_LIST   PortList_t  thePortList[]
 #define PORT(...)         {__VA_ARGS__}
 #define END_OF_PORT_LIST  {0, 0}
 
-#ifndef LORA_TYPES
 typedef enum
 {
     dr0, dr1, dr2, dr3, dr4, dr5
@@ -77,7 +86,16 @@ typedef enum
 }CHID;
 
 typedef  enum {
+    joined, not_joined
+}JoineStatus;
 
+typedef struct PortList
+{
+    uint8_t port;
+    void (*callback)(void);
+} PortList_t;
+
+#endif
 
 //
 //
@@ -94,7 +112,7 @@ public:
     bool connect(void);
 
     int sendString(uint8_t port, bool echo, const __FlashStringHelper* format, ...);
-    int sendStringConfirm(uint8_t port, bool echo, const __FlparseashStringHelper* format, ...);
+    int sendStringConfirm(uint8_t port, bool echo, const __FlashStringHelper* format, ...);
     int sendPayload(uint8_t port, bool echo, Payload* payload);
     int sendPayloadConfirm(uint8_t port, bool echo, Payload* payload);
 
@@ -106,19 +124,26 @@ public:
     void sleep(void);
     void wakeup(void);
 
-    void getHwModel(char* model, uint8_t length);
-    void getVersion(char* version, uint8_t length);
-    void getEUI(char* eui, uint8_t length);
+    String getVersion(void);
+    String get_config(String key);
+    int getLinkCount(uint16_t* upCnt, uint16_t* dwnCnt);
     uint8_t getMaxPayloadSize(void);
+    int setDr(LoRaDR dr);
+    int setConfig(String param);
+    int setLinkCount(uint16_t upCnt, uint16_t dwnCnt);
+
 
 private:
     bool isConnected(void);
-    int transmitString(uint8_t port, bool echo, bool ack, const __FlashStringHelper* format, va_list args);
-    int transmitBinaryData( uint8_t port, bool echo, bool ack, uint8_t* data, uint8_t dataLen);
-    bool sendCommand(String cmd, String param, bool echo = false, uint32_t timeout = LoRa_INIT_WAIT_TIME);
-    bool sendCommand(const __FlashStringHelper* cmd, const __FlashStringHelper* param, bool echo = false, uint32_t timeout = LoRa_INIT_WAIT_TIME);
-    bool sendCommand(const __FlashStringHelper* cmd, String param, bool echo = false, uint32_t timeout = LoRa_INIT_WAIT_TIME);
-    void recvResponce(uint32_t time);
+    int transmitString(bool echo, uint8_t port, bool confirm, const __FlashStringHelper* format, va_list args);
+    int transmitBinaryData(bool echo,  uint8_t port, bool confirm, uint8_t* data, uint8_t dataLen);
+    int sendCommand(bool echo, String cmd, String param, uint32_t timeout = LoRa_INIT_WAIT_TIME_RAK);
+    int sendCommand(bool echo, const __FlashStringHelper* cmd, const __FlashStringHelper* param,  uint32_t timeout = LoRa_INIT_WAIT_TIME_RAK);
+    int sendCommand(bool echo, const __FlashStringHelper* cmd, String paramparam,  uint32_t timeout = LoRa_INIT_WAIT_TIME_RAK);
+    void recvResponse(uint32_t time);
+    int recvEventResponse(uint32_t time = LoRa_SERIAL_WAIT_TIME_RAK);
+    uint8_t getDownLinkBinaryData(uint8_t* data);
+    uint8_t ctoh(uint8_t ch);
 
     HardwareSerial*  _serialPort;
     uint32_t  _baudrate;

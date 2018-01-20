@@ -9,11 +9,6 @@
 
 using namespace tomyApplication;
 
-void DebugPrint(const __FlashStringHelper *format, ...);
-void ConsolePrint(const __FlashStringHelper *format, ...);
-void DebugPrint(const  char* format, ...);
-void ConsolePrint(const  char* format, ...);
-
 uint16_t getUint16(const uint8_t* pos){
     uint16_t val = ((uint16_t)*pos++ << 8);
     return val += *pos;
@@ -72,7 +67,8 @@ Payload::Payload():
     _Gpos = 0;
 }
 
-Payload::Payload(uint8_t len)
+Payload::Payload(uint8_t len):
+        _buff{0},  _maxLen{0}, _Bpos{0}, _bPos{7}, _gPos{7}, _memDlt{0}
 {
     create(len);
 }
