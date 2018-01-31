@@ -3,11 +3,21 @@
 #include <TinyGPS++.h>
 #include <Wire.h>
 
+#define ADB        //  comment out this line when you use RAK811
+
+#ifdef ADB
 ADB922S LoRa;
+#define RAK_CONFIG
+#else
+RAK811 LoRa;
+#define RAK_CONFIG "dev_eui:XXXX&app_eui:XXXX&app_key:XXXX"
+#endif
+
 TinyGPSPlus gps;
 SoftwareSerial gpsSerial(8, 9); // RX, TX
 uint8_t portGPS = 12;
 uint8_t portTemp = 13;
+
 //================================
 //          Initialize Device Function
 //================================
@@ -16,10 +26,18 @@ uint8_t portTemp = 13;
 #define BPS_57600     57600
 #define BPS_115200   115200
 
+#define CONSOLE_Rx_PIN    4
+#define CONSOLE_Tx_PIN    5
+
 void start()
 {
     /*  Setup console */
+#ifdef ADB
     ConsoleBegin(BPS_57600);
+#else
+    ConsoleBegin(BPS_19200, CONSOLE_Rx_PIN, CONSOLE_Tx_PIN);
+#endif
+
     //DisableDebug();
 
     /*  setup Power save Devices */
@@ -37,6 +55,7 @@ void start()
             delay(300);
         }
     }
+    LoRa.setConfig(RAK_CONFIG);
 
     /* set DR. therefor, a payload size is fixed. */
     //LoRa.setDr(dr3);  // dr0 to dr5
@@ -127,8 +146,6 @@ bool isGpsReady(void)
         if (gpsSerial.available() > 0)
         {
             char c = gpsSerial.read();
-
-            DebugPrint("%c", c);
             gps.encode(c);
 
             if (gps.location.isUpdated())

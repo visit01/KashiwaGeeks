@@ -97,6 +97,11 @@ bool RAK811::connect(void)
     }
 }
 
+bool RAK811::reconnect(void)
+{
+    return connect();
+}
+
 //
 //
 //  sendCommand( )

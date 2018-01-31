@@ -110,6 +110,7 @@ public:
 
     bool begin(uint32_t baudrate = 9600);
     bool connect(void);
+    bool reconnect(void);
 
     int sendString(uint8_t port, bool echo, const __FlashStringHelper* format, ...);
     int sendStringConfirm(uint8_t port, bool echo, const __FlashStringHelper* format, ...);

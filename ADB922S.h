@@ -102,6 +102,7 @@ public:
     bool setAdr(bool onOff);
     bool setLinkCheck(void);
     bool saveConfig(void);
+    int setConfig(void) {return 0;}
 
     uint8_t getDr(void);
     uint8_t getPwr(void);
