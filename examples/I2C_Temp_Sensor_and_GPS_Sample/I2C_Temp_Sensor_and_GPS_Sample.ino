@@ -10,7 +10,7 @@ ADB922S LoRa;
 #define RAK_CONFIG
 #else
 RAK811 LoRa;
-#define RAK_CONFIG "dev_eui:XXXX&app_eui:XXXX&app_key:XXXX"
+#define RAK_CONFIG "dev_eui:xxxx&app_eui:xxxx&app_key:xxxx"
 #endif
 
 TinyGPSPlus gps;
@@ -63,6 +63,7 @@ void start()
     /* setup the GPS */
     pinMode(8, INPUT);
     gpsSerial.begin(BPS_9600);
+    ConsolePrint(F("Initializing GPS\n"));
     GpsWakeup();
     while( !isGpsReady() ){ };
 
