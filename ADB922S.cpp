@@ -555,7 +555,7 @@ int ADB922S::setDr(LoRaDR dr)
     return -1;
 }
 
-bool ADB922S::setAdr(bool onOff)
+bool ADB922S::setADR(bool onOff)
 {
     char  cmd[20];
     const char* stat = (onOff ? "on" : "off");

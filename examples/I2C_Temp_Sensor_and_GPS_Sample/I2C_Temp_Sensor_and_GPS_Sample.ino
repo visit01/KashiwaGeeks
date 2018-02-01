@@ -57,8 +57,11 @@ void start()
     }
     LoRa.setConfig(RAK_CONFIG);
 
+
     /* set DR. therefor, a payload size is fixed. */
     //LoRa.setDr(dr3);  // dr0 to dr5
+
+    LoRa.setADR(true);
 
     /* setup the GPS */
     pinMode(8, INPUT);

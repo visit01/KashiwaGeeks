@@ -99,7 +99,7 @@ public:
     uint8_t getTxRetryCount(void);
 
     int setDr(LoRaDR dr);
-    bool setAdr(bool onOff);
+    bool setADR(bool onOff);
     bool setLinkCheck(void);
     bool saveConfig(void);
     int setConfig(void) {return 0;}

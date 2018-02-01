@@ -472,6 +472,19 @@ uint8_t RAK811::getMaxPayloadSize(void)
 //    Setters
 //
 //
+int RAK811::setADR(bool flg)
+{
+    String param = F("adr:");
+    if ( flg )
+    {
+        param += String(F("on"));
+    }
+    else
+    {
+        param += String("off");
+    }
+    return setConfig(param);
+}
 
 int RAK811::setDr(LoRaDR dr)
 {

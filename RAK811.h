@@ -130,6 +130,7 @@ public:
     int getLinkCount(uint16_t* upCnt, uint16_t* dwnCnt);
     uint8_t getMaxPayloadSize(void);
     int setDr(LoRaDR dr);
+    int setADR(bool flg);
     int setConfig(String param);
     int setLinkCount(uint16_t upCnt, uint16_t dwnCnt);
 
