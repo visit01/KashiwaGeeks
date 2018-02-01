@@ -328,7 +328,7 @@ Application::~Application(void)
 
 void Application::initialize(void)
 {
-    DebugPrint(F("\n\n_/_/_/ KashiwaGeeks 0.6.2 _/_/_/\r\n\n\n"));
+    DebugPrint(F("\n\n_/_/_/ KashiwaGeeks 0.6.1 _/_/_/\r\n\n\n"));
 
     for (uint8_t i = 0; theTaskList[i].callback != 0; i++)
     {
@@ -388,7 +388,7 @@ void Application::systemSleep(void)
         sleep();   // set device low power mode
         _sleepMode = true;
     }
-    //theConsole->flush();
+    theLog->flush();
     set_sleep_mode(SLEEP_MODE);
     sleep_enable();
     enableInterrupts();
@@ -964,3 +964,10 @@ void SerialLog::savePower(void)
     }
 }
 
+void SerialLog::flush(void)
+{
+    if ( !_serialFlg )
+    {
+        Serial.flush();
+    }
+}

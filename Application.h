@@ -172,6 +172,7 @@ public:
     void disableDebug(void);
     void disableConsole(void);
     void savePower(void);
+    void flush(void);
 private:
     void print(char* buf);
     SoftwareSerial* _serial;
