@@ -15,7 +15,7 @@
 //
 #define SHOW_LORA_TRANSACTION
 #define FREE_MEMORY_CHECK
-#define SHOW_TASK_LIST
+//#define SHOW_TASK_LIST
 //#define SHOW_SYSTIME
 
 

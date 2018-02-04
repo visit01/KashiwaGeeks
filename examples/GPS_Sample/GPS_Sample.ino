@@ -1,4 +1,3 @@
-
 #include <KashiwaGeeks.h>
 #include <TinyGPS++.h>
 
@@ -19,6 +18,13 @@ void start()
     /*  Setup console */
     ConsoleBegin(BPS_57600);
     //DisableDebug();
+
+    /*
+     * Enable Interrupt 0 & 1  Uncomment the following two  lines.
+     * For ADB922S only , CUT the pin2 and 3 of the Sheild.
+     */
+    //pinMode(2, INPUT_PULLUP);
+    //pinMode(3, INPUT_PULLUP);
 
     /*  setup Power save Devices */
     power_adc_disable();       // ADC converter
@@ -73,7 +79,6 @@ void wakeup(void)
 void int0D2(void)
 {
     DebugPrint(F("********* INT0 *******\n"));
-    GpsSend();
 }
 
 //================================
@@ -150,14 +155,14 @@ void GpsSend(void)
 //========================================
 void task1(void)
 {
-    DebugPrint(F("********* task1 *******\n"));
+    GpsSend();
 }
 //========================================
 //            Execution interval
 //    TASK( function, interval by second )
 //========================================
 TASK_LIST = {
-        //TASK(task1, 0, 15), // GPS
+        TASK(task1, 0, 15), // GPS
         END_OF_TASK_LIST
 };
 /*   End of Program  */

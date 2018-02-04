@@ -35,20 +35,4 @@ TASK(func1, 0, 5),
 };
 
 
-/*****************
- * void loop()
- * {
- *   ConsolePrint("Count=%d\n", cnt++);
- *   delay(1000);
- * }
- ****************/
-
-
-// uncomment the line8, then check ConsolePrint is disabled.
-// uncomment the line9, then nothing shown on the screen.
-
-// Check the interruption
-// 1) connect D2 pin to the GND.
-// 2) connect D3 pin to the GND.
-
 

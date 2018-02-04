@@ -1,9 +1,8 @@
-
 #include <KashiwaGeeks.h>
-#include <TinyGPS++.h>
 #include <Wire.h>
+#include "KGPS.h"
 
-#define ADB        //  comment out this line when you use RAK811
+#define ADB        //  comment out this line for RAK811
 
 #ifdef ADB
 ADB922S LoRa;
@@ -13,8 +12,7 @@ RAK811 LoRa;
 #define RAK_CONFIG "dev_eui:xxxx&app_eui:xxxx&app_key:xxxx"
 #endif
 
-TinyGPSPlus gps;
-SoftwareSerial gpsSerial(8, 9); // RX, TX
+KGPS gps;
 uint8_t portGPS = 12;
 uint8_t portTemp = 13;
 
@@ -40,11 +38,18 @@ void start()
 
     //DisableDebug();
 
+    /*
+     * Enable Interrupt 0 & 1  Uncomment the following two lines.
+     * For ADB922S, CUT the pin2 and 3 of the Sheild.
+     */
+    pinMode(2, INPUT_PULLUP);
+    pinMode(3, INPUT_PULLUP);
+
     /*  setup Power save Devices */
     power_adc_disable();       // ADC converter
     power_spi_disable();       // SPI
 
-    /*  setup ADB922S  */
+    /*  setup the ADB922S  */
     if ( LoRa.begin(BPS_19200) == false )
     {
         while(true)
@@ -57,18 +62,13 @@ void start()
     }
     LoRa.setConfig(RAK_CONFIG);
 
-
     /* set DR. therefor, a payload size is fixed. */
     //LoRa.setDr(dr3);  // dr0 to dr5
 
-    LoRa.setADR(true);
-
     /* setup the GPS */
-    pinMode(8, INPUT);
-    gpsSerial.begin(BPS_9600);
-    ConsolePrint(F("Initializing GPS\n"));
-    GpsWakeup();
-    while( !isGpsReady() ){ };
+    gps.begin(9600, 8, 9);
+    ConsolePrint(F("Initilizing GPS\n"));
+    while( !gps.isReady() ){ };
 
     /* setup I2C */
     Wire.begin();
@@ -104,9 +104,7 @@ TASK_LIST = {
 void int0D2(void)
 {
     DebugPrint(F("********* INT0 *******\n"));
-    GpsWakeup();
-    while( !isGpsReady() ){ };
-    GpsSend();
+    sendLocation();
 }
 
 
@@ -116,7 +114,7 @@ void int0D2(void)
 void sleep(void)
 {
     LoRa.sleep();
-    GpsSleep();
+    gps.sleep();
     DebugPrint(F("Sleep.\n"));
 }
 void wakeup(void)
@@ -127,68 +125,18 @@ void wakeup(void)
 
 
 //================================
-// GPS Functions
+// GPS Function
 //================================
-void GpsWakeup(void)
-{
-    /* Provide Vcc */
-    digitalWrite(10, HIGH);
-}
 
-void GpsSleep(void)
+void sendLocation(void)
 {
-    digitalWrite(10, LOW);
-}
-
-bool isGpsReady(void)
-{
-    gpsSerial.listen();
-    uint32_t  tim = millis() + 3000;
-
-    while (millis() < tim)
+    gps.wakeup();
+    while( !gps.isReady() ){ };
+    Payload* pl = gps.getPayload();
+    if (pl)
     {
-        if (gpsSerial.available() > 0)
-        {
-            char c = gpsSerial.read();
-            gps.encode(c);
-
-            if (gps.location.isUpdated())
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        LoRa.sendPayload(portTemp, true, pl);
     }
-}
-
-void GpsSend(void)
-{
-  if ( isGpsReady() )
-  {
-        uint8_t hdopGps = gps.hdop.value()/10;
-        uint32_t Latitude = ((gps.location.lat() + 90) / 180.0) * 16777215;
-        uint32_t Longitude = ((gps.location.lng() + 180) / 360.0) * 16777215;
-        uint16_t alt = gps.altitude.meters();
-
-        Payload pl(LoRa.getMaxPayloadSize());
-        pl.set_uint24(Latitude);
-        pl.set_uint24(Longitude);
-        pl.set_uint16(alt);
-        pl.set_uint8(hdopGps);
-
-        /*  Debug purpose */
-        uint32_t la = pl.get_uint24();
-        uint32_t lo = pl.get_uint24();
-        uint16_t al = pl.get_uint16();
-        uint8_t hd = pl.get_uint8();
-        DebugPrint(F("Lat=%"PRIu32", Lon=%"PRIu32", Alt=%"PRIu16 ", %d\n"), Latitude, Longitude, alt, hdopGps);
-        DebugPrint(F("Lat=%"PRIu32", Lon=%"PRIu32", Alt=%"PRIu16 ", %d\n"), la, lo, al, hd);
-
-        LoRa.sendPayloadConfirm(portGPS, true, &pl);
-  }
 }
 
 //================================

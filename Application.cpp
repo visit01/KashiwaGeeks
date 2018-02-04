@@ -257,13 +257,6 @@ void resetArduino(void) __attribute__((weak));
 
 void setup(void)
 {
-    pinMode(ARDUINO_LED_PIN , OUTPUT);
-    pinMode(2, INPUT_PULLUP);
-    pinMode(3, INPUT_PULLUP);
-
-    ConsoleBegin(9600);
-
-
     start();
     theApplication->initialize();
     theLog->savePower();

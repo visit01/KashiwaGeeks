@@ -18,6 +18,13 @@ void start()
     //DisableConsole();
     //DisableDebug();
 
+    /*
+     * Enable Interrupt 0 & 1  Uncomment the following two  lines.
+     * For ADB922S only , CUT the pin2 and 3 of the Sheild.
+     */
+    //pinMode(2, INPUT_PULLUP);
+    //pinMode(3, INPUT_PULLUP);
+
     ConsolePrint(F("**** Step9 Starts*****\n"));
 
     /*  setup Power save Devices */
